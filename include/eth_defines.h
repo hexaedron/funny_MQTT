@@ -1,3 +1,5 @@
+//https://github.com/openwch/ch32v20x/blob/main/EVT/EXAM/SRC/Peripheral/inc/ch32v20x.h#L4797
+
 #define R32_ETH_MIWR            (*((volatile uint32_t *)(0x40028000+0x24)))
 #define R8_ETH_MIREGADR         (*((volatile uint8_t *)(0x40028000+0x24))) /* MII address register*/
 #define  RB_ETH_MIREGADR_MASK   0x1F                  /* RW PHY register address mask */
