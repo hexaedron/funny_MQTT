@@ -8,6 +8,10 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "eth_driver.h"
+
+#include "tcp_server.h"
+
 int main()
 {
 	SystemInit();
@@ -17,18 +21,45 @@ int main()
 	system_initSystick();
 
 	
-	funGpioInitAll();
-	funPinMode(PC0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
-	funPinMode(PC1, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	u8 i;
 
-	while (true)
-	{
-		funDigitalWrite(PC0, FUN_LOW);
-		funDigitalWrite(PC1, FUN_HIGH);
-		Delay_Ms(200 );
-		funDigitalWrite(PC0, FUN_HIGH);
-		funDigitalWrite(PC1, FUN_LOW);
-		Delay_Ms(200);
-	}
+    WCHNET_GetMacAddr(MACAddr);                                   //get the chip MAC address
+
+    for(i = 0; i < 6; i++) 
+
+    TIM2_Init();
+    i = ETH_LibInit(IPAddr, GWIPAddr, IPMask, MACAddr);           //Ethernet library initialize
+    mStopIfError(i);
+    if (i == WCHNET_ERR_SUCCESS)
+        while (1)
+		{
+			/* code */
+		}
+		
+#if KEEPALIVE_ENABLE                                               //Configure keep alive parameters
+    {
+        struct _KEEP_CFG cfg;
+
+        cfg.KLIdle = 20000;
+        cfg.KLIntvl = 15000;
+        cfg.KLCount = 9;
+        WCHNET_ConfigKeepLive(&cfg);
+    }
+#endif
+    memset(socket, 0xff, WCHNET_MAX_SOCKET_NUM);
+    WCHNET_CreateTcpSocketListen();                               //Create TCP Socket for Listening
+
+    while(1)
+    {
+        /*Ethernet library main task function,
+         * which needs to be called cyclically*/
+        WCHNET_MainTask();
+        /*Query the Ethernet global interrupt,
+         * if there is an interrupt, call the global interrupt handler*/
+        if(WCHNET_QueryGlobalInt())
+        {
+            WCHNET_HandleGlobalInt();
+        }
+    }
 }
 
