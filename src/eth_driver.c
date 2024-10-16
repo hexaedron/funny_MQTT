@@ -57,6 +57,24 @@ uint8_t CRCErrPktCnt = 0;
 uint8_t phyLinkStatus = 0;
 uint8_t phyPNChangeCnt = 0;
 uint8_t PhyPolarityDetect = 0;
+
+/*********************************************************************
+ * @fn      RCC_ETHDIVConfig
+ *
+ * @brief   Configures the ETH clock.
+ *
+ * @param   RCC_ETHPRE_Div - defines the USBHS clock divider.
+ *            RCC_ETHCLK_Div1 - ETH clock = AHB/1.
+ *            RCC_ETHCLK_Div2 - ETH clock = AHB/2.
+ *
+ * @return  none
+ */
+void RCC_ETHDIVConfig(uint32_t RCC_ETHPRE_Div)
+{
+    RCC->CFGR0 &= ~((uint32_t)1<<28);
+    RCC->CFGR0 |= RCC_ETHPRE_Div<<28;
+}
+
 /*********************************************************************
  * @fn      WCHNET_GetMacAddr
  *
