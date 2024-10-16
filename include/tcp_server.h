@@ -48,19 +48,43 @@ void mStopIfError(u8 iError)
 void TIM2_Init(void)
 {
     //TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure = { 0 };
-//
-    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-//
+
+    // Enable TIM2
+	RCC->APB1PCENR |= RCC_APB1Periph_TIM2;
+    // Reset TIM2 to init all regs
+	RCC->APB1PRSTR |= RCC_APB1Periph_TIM2;
+	RCC->APB1PRSTR &= ~RCC_APB1Periph_TIM2;
+
     //TIM_TimeBaseStructure.TIM_Period = SystemCoreClock / 1000000;
+
+
     //TIM_TimeBaseStructure.TIM_Prescaler = WCHNETTIMERPERIOD * 1000 - 1;
     //TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     //TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+
+	
     //TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+   
+
+
+	TIM2->CTLR1 &= (uint16_t)(~((uint16_t)(TIM_DIR | TIM_CMS)));
+	TIM2->CTLR1 |= TIM_CounterMode_Up;
+
+	TIM2->CTLR1 &= ~(TIM_CTLR1_CKD);
+
+	TIM2->ATRLR = (FUNCONF_SYSTEM_CORE_CLOCK / 1000000);
+    TIM2->PSC = (uint16_t)(WCHNETTIMERPERIOD * 1000 - 1);
+
     //TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-//
-    //TIM_Cmd(TIM2, ENABLE);
+	TIM2->DMAINTENR |= TIM_IT_Update;
+
+	//TIM_Cmd(TIM2, ENABLE);
+	TIM2->CTLR1 |= TIM_CEN;
+
     //TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-    //NVIC_EnableIRQ(TIM2_IRQn);
+	TIM2->INTFR = ~TIM_IT_Update;
+	
+    NVIC_EnableIRQ(TIM2_IRQn);
 }
 
 /*********************************************************************
