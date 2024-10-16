@@ -344,11 +344,11 @@ void ETH_LedLinkSet( uint8_t mode )
 {
     if( mode == LED_OFF )
     {
-        GPIO_SetBits(GPIOC, GPIO_Pin_0);
+        funDigitalWrite(PC0, FUN_HIGH);
     }
     else
     {
-        GPIO_ResetBits(GPIOC, GPIO_Pin_0);
+        funDigitalWrite(PC0, FUN_LOW);
     }
 }
 
@@ -363,11 +363,11 @@ void ETH_LedDataSet( uint8_t mode )
 {
     if( mode == LED_OFF )
     {
-        GPIO_SetBits(GPIOC, GPIO_Pin_1);
+        funDigitalWrite(PC1, FUN_HIGH);
     }
     else
     {
-        GPIO_ResetBits(GPIOC, GPIO_Pin_1);
+        funDigitalWrite(PC1, FUN_LOW);
     }
 }
 
@@ -380,13 +380,9 @@ void ETH_LedDataSet( uint8_t mode )
  */
 void ETH_LedConfiguration(void)
 {
-    GPIO_InitTypeDef  GPIO={0};
+    funPinMode(PC0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PC1, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
-    GPIO.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;
-    GPIO.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOC,&GPIO);
     ETH_LedDataSet(LED_OFF);
     ETH_LedLinkSet(LED_OFF);
 }

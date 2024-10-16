@@ -1,3 +1,7 @@
+#pragma once
+
+#include <stdint.h>
+
 //https://github.com/openwch/ch32v20x/blob/main/EVT/EXAM/SRC/Peripheral/inc/ch32v20x.h#L4797
 
 #define R32_ETH_MIWR            (*((volatile uint32_t *)(0x40028000+0x24)))
@@ -80,3 +84,8 @@ with 00h to 64 bytes, otherwise the short packet is filled with 60 bytes of 0, a
 #define PHY_Reset                               ((uint16_t)0x8000)      /* PHY Reset */
 
 #define PHY_AutoNego_Complete                   ((uint16_t)0x0020)      /* Auto-Negotioation process completed */
+
+#if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
+void RCC_ETHDIVConfig(uint32_t RCC_ETHPRE_Div);
+
+#endif
