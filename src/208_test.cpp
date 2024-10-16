@@ -16,12 +16,19 @@ int main()
 #endif
 	system_initSystick();
 
-	// We use button on PC6, so we need to init it and turn on interrupt.
+	
 	funGpioInitAll();
-	funPinMode(PC6, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+	funPinMode(PC0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PC1, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
 
 	while (true)
 	{
+		funDigitalWrite(PC0, FUN_LOW);
+		funDigitalWrite(PC1, FUN_HIGH);
+		Delay_Ms(200 );
+		funDigitalWrite(PC0, FUN_HIGH);
+		funDigitalWrite(PC1, FUN_LOW);
+		Delay_Ms(200);
 	}
 }
 
