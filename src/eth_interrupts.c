@@ -12,6 +12,10 @@
 #include <ch32v003fun.h>
 #include "eth_driver.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void NMI_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void HardFault_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void ETH_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
@@ -26,7 +30,7 @@ void TIM2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
  */
 void NMI_Handler(void)
 {
-    /**/
+    while (1);
 }
 
 /*********************************************************************
@@ -42,7 +46,7 @@ void HardFault_Handler(void)
     //printf("mcause:%08x\r\n",__get_MCAUSE());
     //printf("mtval:%08x\r\n",__get_MTVAL());
     //printf("mepc:%08x\r\n",__get_MEPC());
-    while (1);
+    while (1); 
 }
 
 /*********************************************************************
@@ -69,3 +73,7 @@ void TIM2_IRQHandler(void)
     WCHNET_TimeIsr(WCHNETTIMERPERIOD);
     TIM2->INTFR = ~TIM_IT_Update;
 }
+
+#ifdef __cplusplus
+}
+#endif

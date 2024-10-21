@@ -398,8 +398,9 @@ void ETH_LedDataSet( uint8_t mode )
  */
 void ETH_LedConfiguration(void)
 {
-    funPinMode(PC0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
-	funPinMode(PC1, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+    funGpioInitC();
+    funPinMode(PC0, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PC1, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP);
 
     ETH_LedDataSet(LED_OFF);
     ETH_LedLinkSet(LED_OFF);
@@ -716,7 +717,7 @@ void WCHNET_ETHIsr( void )
 void ETH_Init( uint8_t *macAddr )
 {
     ETH_LedConfiguration( );
-    Delay_Ms(100);
+    //Delay_Ms(100);
     ETH_Configuration( macAddr );
     ETH_DMATxDescChainInit(DMATxDscrTab, MACTxBuf, ETH_TXBUFNB);
     ETH_DMARxDescChainInit(DMARxDscrTab, MACRxBuf, ETH_RXBUFNB);

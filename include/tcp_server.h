@@ -1,12 +1,13 @@
 #define KEEPALIVE_ENABLE                1                //Enable keep alive function
 
 u8 MACAddr[6];                                          //MAC address
-u8 IPAddr[4] = { 192, 168, 1, 33 };                     //IP address
+u8 IPAddr[4] = { 192, 168, 1, 43 };                     //IP address
 u8 GWIPAddr[4] = { 192, 168, 1, 1 };                    //Gateway IP address
 u8 IPMask[4] = { 255, 255, 255, 0 };                    //subnet mask
 u16 srcport = 1000;                                     //source port
 
 u8 SocketIdForListen;                                   //Socket for Listening
+SOCK_INF TmpSocketInf;
 u8 socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
 u8 SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
 u8 MyBuf[RECE_BUF_LEN];
@@ -72,7 +73,8 @@ void TIM2_Init(void)
 
 	TIM2->CTLR1 &= ~(TIM_CTLR1_CKD);
 
-	TIM2->ATRLR = (FUNCONF_SYSTEM_CORE_CLOCK / 1000000);
+	//TIM2->ATRLR = (FUNCONF_SYSTEM_CORE_CLOCK / 4 / 1000000);
+    TIM2->ATRLR = (120000000UL / 1000000UL);
     TIM2->PSC = (uint16_t)(WCHNETTIMERPERIOD * 1000 - 1);
 
     //TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
@@ -97,7 +99,7 @@ void TIM2_Init(void)
 void WCHNET_CreateTcpSocketListen(void)
 {
     u8 i;
-    SOCK_INF TmpSocketInf;
+    //SOCK_INF TmpSocketInf;
 
     memset((void *) &TmpSocketInf, 0, sizeof(SOCK_INF));
     TmpSocketInf.SourPort = srcport;
