@@ -39,9 +39,10 @@ int main()
         /*Ethernet library main task function,
          * which needs to be called cyclically*/
         myServer.mainTask();
+
+
         /*Query the Ethernet global interrupt,
          * if there is an interrupt, call the global interrupt handler*/
-        
         if(myServer.queryGlobalInt())
         {
             myServer.handleGlobalInt();
