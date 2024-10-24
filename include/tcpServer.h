@@ -7,21 +7,10 @@ u8 IPMask[4] = { 255, 255, 255, 0 };                    //subnet mask
 u16 srcport = 1000;                                     //source port
 
 u8 SocketIdForListen;                                   //Socket for Listening
-SOCK_INF TmpSocketInf;
 u8 socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
 u8 SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
 u8 MyBuf[RECE_BUF_LEN];
 
-///===================== MESSY =================================
-///=============================================================
-///=============================================================
-///=============================================================
-void printf(const char* x, ...)
-{}
-///=============================================================
-///=============================================================
-///=============================================================
-///=============================================================
 
 /*********************************************************************
  * @fn      mStopIfError
@@ -36,7 +25,6 @@ void mStopIfError(u8 iError)
 {
     if (iError == WCHNET_ERR_SUCCESS)
         return;
-    printf("Error: %02X\r\n", (u16) iError);
 }
 
 /*********************************************************************
@@ -48,42 +36,24 @@ void mStopIfError(u8 iError)
  */
 void TIM2_Init(void)
 {
-    //TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure = { 0 };
-
     // Enable TIM2
 	RCC->APB1PCENR |= RCC_APB1Periph_TIM2;
     // Reset TIM2 to init all regs
 	RCC->APB1PRSTR |= RCC_APB1Periph_TIM2;
 	RCC->APB1PRSTR &= ~RCC_APB1Periph_TIM2;
 
-    //TIM_TimeBaseStructure.TIM_Period = SystemCoreClock / 1000000;
-
-
-    //TIM_TimeBaseStructure.TIM_Prescaler = WCHNETTIMERPERIOD * 1000 - 1;
-    //TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-    //TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-
-	
-    //TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
-   
-
-
 	TIM2->CTLR1 &= (uint16_t)(~((uint16_t)(TIM_DIR | TIM_CMS)));
 	TIM2->CTLR1 |= TIM_CounterMode_Up;
 
 	TIM2->CTLR1 &= ~(TIM_CTLR1_CKD);
 
-	//TIM2->ATRLR = (FUNCONF_SYSTEM_CORE_CLOCK / 4 / 1000000);
     TIM2->ATRLR = (120000000UL / 1000000UL);
     TIM2->PSC = (uint16_t)(WCHNETTIMERPERIOD * 1000 - 1);
 
-    //TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
 	TIM2->DMAINTENR |= TIM_IT_Update;
 
-	//TIM_Cmd(TIM2, ENABLE);
 	TIM2->CTLR1 |= TIM_CEN;
 
-    //TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 	TIM2->INTFR = ~TIM_IT_Update;
 	
     NVIC_EnableIRQ(TIM2_IRQn);
@@ -99,13 +69,12 @@ void TIM2_Init(void)
 void WCHNET_CreateTcpSocketListen(void)
 {
     u8 i;
-    //SOCK_INF TmpSocketInf;
+    SOCK_INF TmpSocketInf;
 
     memset((void *) &TmpSocketInf, 0, sizeof(SOCK_INF));
     TmpSocketInf.SourPort = srcport;
     TmpSocketInf.ProtoType = PROTO_TYPE_TCP;
     i = WCHNET_SocketCreat(&SocketIdForListen, &TmpSocketInf);
-    printf("SocketIdForListen %d\r\n", SocketIdForListen);
     mStopIfError(i);
     i = WCHNET_SocketListen(SocketIdForListen);                   //listen for connections
     mStopIfError(i);
@@ -188,8 +157,8 @@ void WCHNET_HandleSockInt(u8 socketid, u8 intstat)
                 break;
             }
         }
-        printf("TCP Connect Success\r\n");
-        printf("socket id: %d\r\n",socket[i]);
+        //printf("TCP Connect Success\r\n");
+        //printf("socket id: %d\r\n",socket[i]);
     }
     if (intstat & SINT_STAT_DISCONNECT)                           //disconnect
     {
@@ -199,7 +168,7 @@ void WCHNET_HandleSockInt(u8 socketid, u8 intstat)
                 break;
             }
         }
-        printf("TCP Disconnect\r\n");
+        //printf("TCP Disconnect\r\n");
     }
     if (intstat & SINT_STAT_TIM_OUT)                              //timeout disconnect
     {
@@ -209,7 +178,7 @@ void WCHNET_HandleSockInt(u8 socketid, u8 intstat)
                 break;
             }
         }
-        printf("TCP Timeout\r\n");
+        //printf("TCP Timeout\r\n");
     }
 }
 
@@ -229,17 +198,19 @@ void WCHNET_HandleGlobalInt(void)
     intstat = WCHNET_GetGlobalInt();                              //get global interrupt flag
     if (intstat & GINT_STAT_UNREACH)                              //Unreachable interrupt
     {
-        printf("GINT_STAT_UNREACH\r\n");
+        //printf("GINT_STAT_UNREACH\r\n");
     }
     if (intstat & GINT_STAT_IP_CONFLI)                            //IP conflict
     {
-        printf("GINT_STAT_IP_CONFLI\r\n");
+        //printf("GINT_STAT_IP_CONFLI\r\n");
     }
     if (intstat & GINT_STAT_PHY_CHANGE)                           //PHY status change
     {
         i = WCHNET_GetPHYStatus();
         if (i & PHY_Linked_Status)
-            printf("PHY Link Success\r\n");
+        {    
+            //printf("PHY Link Success\r\n");
+        }
     }
     if (intstat & GINT_STAT_SOCKET) {                             //socket related interrupt
         for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {
