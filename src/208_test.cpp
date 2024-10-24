@@ -5,18 +5,13 @@
 #include "SystemInit120_HSE32.h"
 
 
-#include <stdbool.h>
-#include <cstdlib>
-#include <cstring>
-
 #include "eth_driver.h"
 
 #include "tcpServer.h"
 
-//static uint8_t MACAddr[6];                                          //MAC address
-static uint8_t IPAddr[4] = { 192, 168, 1, 43 };                     //IP address
-static uint8_t GWIPAddr[4] = { 192, 168, 1, 1 };                    //Gateway IP address
-static uint8_t IPMask[4] = { 255, 255, 255, 0 };                    //subnet mask
+static uint8_t IPAddr[4]    = { 192, 168, 1, 43 };                   //IP address
+static uint8_t GWIPAddr[4]  = { 192, 168, 1, 1 };                    //Gateway IP address
+static uint8_t IPMask[4]    = { 255, 255, 255, 0 };                  //subnet mask
 uint16_t srcport = 1000; 
 
 
@@ -43,13 +38,13 @@ int main()
     {
         /*Ethernet library main task function,
          * which needs to be called cyclically*/
-        myServer.MainTask();
+        myServer.mainTask();
         /*Query the Ethernet global interrupt,
          * if there is an interrupt, call the global interrupt handler*/
         
-        if(myServer.QueryGlobalInt())
+        if(myServer.queryGlobalInt())
         {
-            myServer.HandleGlobalInt();
+            myServer.handleGlobalInt();
         }
     }
 }

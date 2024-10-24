@@ -1,12 +1,12 @@
 #include "tcpServer.h"
 
-tcpServer::tcpServer(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask, uint16_t IPPort)
+tcpServer::tcpServer(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask, uint16_t ipport)
 {
     WCHNET_GetMacAddr(this->MACAddr);
-    this->IPAddr    = IPAddr;
-    this->GWIPAddr  = GWIPAddr;
-    this->IPMask    = IPMask;
-    this->srcport   = IPPort;
+    this->IPAddr    = ipaddr;
+    this->GWIPAddr  = gwipaddr;
+    this->IPMask    = ipmask;
+    this->srcport   = ipport;
 }
 
 tcpServer::~tcpServer()
@@ -43,12 +43,9 @@ void tcpServer::configKeepAlive(uint32_t KLIdle, uint32_t KLIntvl, uint32_t KLCo
 
 bool tcpServer::init(void)
 {
-    uint8_t i;
+    this->tim2Init();          
     
-    TIM2_Init();
-    i = ETH_LibInit(IPAddr, GWIPAddr, IPMask, MACAddr);           //Ethernet library initialize
-    
-    if (i != WCHNET_ERR_SUCCESS)
+    if (ETH_LibInit(IPAddr, GWIPAddr, IPMask, MACAddr) != WCHNET_ERR_SUCCESS) //Ethernet library initialize
     {
         return false;
     }
@@ -60,7 +57,7 @@ bool tcpServer::init(void)
     
     memset(socket, 0xff, WCHNET_MAX_SOCKET_NUM);
     
-    return this->CreateTcpSocketListen();
+    return this->createTcpSocketListen();
 }
 
 
@@ -86,7 +83,7 @@ void tcpServer::mStopIfError(u8 iError)
  *
  * @return  none
  */
-void tcpServer::TIM2_Init(void)
+void tcpServer::tim2Init(void)
 {
     // Enable TIM2
 	RCC->APB1PCENR |= RCC_APB1Periph_TIM2;
@@ -118,7 +115,7 @@ void tcpServer::TIM2_Init(void)
  *
  * @return  none
  */
-bool tcpServer::CreateTcpSocketListen(void)
+bool tcpServer::createTcpSocketListen(void)
 {
     SOCK_INF TmpSocketInf;
 
@@ -142,7 +139,7 @@ bool tcpServer::CreateTcpSocketListen(void)
  *
  * @return  none
  */
-void tcpServer::DataLoopback(u8 id)
+void tcpServer::dataLoopback(u8 id)
 {
 #if 1
     u8 i;
@@ -189,13 +186,13 @@ void tcpServer::DataLoopback(u8 id)
  *
  * @return  none
  */
-void tcpServer::HandleSockInt(u8 socketid, u8 intstat)
+void tcpServer::handleSockInt(u8 socketid, u8 intstat)
 {
     u8 i;
 
     if (intstat & SINT_STAT_RECV)                                 //receive data
     {
-        this->DataLoopback(socketid);                            //Data loopback
+        this->dataLoopback(socketid);                            //Data loopback
     }
     if (intstat & SINT_STAT_CONNECT)                              //connect successfully
     {
@@ -243,7 +240,7 @@ void tcpServer::HandleSockInt(u8 socketid, u8 intstat)
  *
  * @return  none
  */
-void tcpServer::HandleGlobalInt(void)
+void tcpServer::handleGlobalInt(void)
 {
     u8 intstat;
     u16 i;
@@ -270,17 +267,17 @@ void tcpServer::HandleGlobalInt(void)
         for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {
             socketint = WCHNET_GetSocketInt(i);
             if (socketint)
-                this->HandleSockInt(i, socketint);
+                this->handleSockInt(i, socketint);
         }
     }
 }
 
-void tcpServer::MainTask()
+void tcpServer::mainTask()
 {
     WCHNET_MainTask();
 }
 
-uint8_t tcpServer::QueryGlobalInt()
+uint8_t tcpServer::queryGlobalInt()
 {
     return WCHNET_QueryGlobalInt();
 }
