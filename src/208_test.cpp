@@ -9,13 +9,15 @@
 #include <cstdlib>
 #include <cstring>
 
-
 #include "eth_driver.h"
-
 
 #include "tcpServer.h"
 
-
+//static uint8_t MACAddr[6];                                          //MAC address
+static uint8_t IPAddr[4] = { 192, 168, 1, 43 };                     //IP address
+static uint8_t GWIPAddr[4] = { 192, 168, 1, 1 };                    //Gateway IP address
+static uint8_t IPMask[4] = { 255, 255, 255, 0 };                    //subnet mask
+uint16_t srcport = 1000; 
 
 
 int main()
@@ -30,46 +32,24 @@ int main()
 
     //funGpioInitAll();
 
-	
-	u8 i;
-
-    WCHNET_GetMacAddr(MACAddr);                                   //get the chip MAC address
-
-    TIM2_Init();
-    i = ETH_LibInit(IPAddr, GWIPAddr, IPMask, MACAddr);           //Ethernet library initialize
-    //mStopIfError(i);
-    if (i != WCHNET_ERR_SUCCESS)
-    {
-        while (true)
-		{
-			/* code */
-		}
-    }
-		
-#if KEEPALIVE_ENABLE                                               //Configure keep alive parameters
-    {
-        struct _KEEP_CFG cfg;
-
-        cfg.KLIdle = 20000;
-        cfg.KLIntvl = 15000;
-        cfg.KLCount = 9;
-        WCHNET_ConfigKeepLive(&cfg);
-    }
-#endif
-    memset(socket, 0xff, WCHNET_MAX_SOCKET_NUM);
-    WCHNET_CreateTcpSocketListen();                               //Create TCP Socket for Listening
+   tcpServer myServer(IPAddr, GWIPAddr, IPMask, srcport);
+   myServer.configKeepAlive();
+   if(!myServer.init())
+   {
+        while (1){}  
+   }
 
     while(1)
     {
         /*Ethernet library main task function,
          * which needs to be called cyclically*/
-        WCHNET_MainTask();
+        myServer.MainTask();
         /*Query the Ethernet global interrupt,
          * if there is an interrupt, call the global interrupt handler*/
         
-        if(WCHNET_QueryGlobalInt())
+        if(myServer.QueryGlobalInt())
         {
-            WCHNET_HandleGlobalInt();
+            myServer.HandleGlobalInt();
         }
     }
 }
