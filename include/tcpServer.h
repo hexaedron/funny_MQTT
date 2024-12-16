@@ -34,6 +34,7 @@ public:
     void handleGlobalInt(void);
     void mainTask(void);
     uint8_t queryGlobalInt(void);
+    void sendPacket(u8 *buf, u32 len);
     tcpServer(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask, uint16_t IPPort);
     ~tcpServer();
 };

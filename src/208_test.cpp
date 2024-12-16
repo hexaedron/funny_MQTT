@@ -1,7 +1,11 @@
 #include <ch32v003fun.h>
 #include "funny_defs.h"
 
+#include <cstdlib>
+
 #include "funny_time.h"
+#include "simpleTimer.h"
+
 #include "SystemInit120_HSE32.h"
 
 
@@ -34,12 +38,24 @@ int main()
         while (1){}  
    }
 
+
+    simpleTimer32 myTimer(2000UL);
+
     while(1)
     {
         /*Ethernet library main task function,
          * which needs to be called cyclically*/
         myServer.mainTask();
 
+        if(myTimer.ready())
+        {
+            char buf[14];
+            itoa(millis32(), buf, 10);
+            size_t len = strlen(buf);
+            buf[len] = '\n';
+            buf[len + 1] = '\r';
+            myServer.sendPacket((uint8_t*) buf, len + 2);
+        }
 
         /*Query the Ethernet global interrupt,
          * if there is an interrupt, call the global interrupt handler*/

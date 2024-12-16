@@ -281,3 +281,18 @@ uint8_t tcpServer::queryGlobalInt()
 {
     return WCHNET_QueryGlobalInt();
 }
+
+/*********************************************************************
+ * @fn      sendPacket
+ *
+ * @brief   send data.
+ *
+ * @param   buf - data buff.
+ *          len - data length
+ *
+ * @return  none
+ */
+void tcpServer::sendPacket(u8 *buf, u32 len)
+{
+    WCHNET_SocketSend(this->SocketIdForListen, buf, &len);
+}
