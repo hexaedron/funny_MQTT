@@ -294,5 +294,8 @@ uint8_t tcpServer::queryGlobalInt()
  */
 void tcpServer::sendPacket(u8 *buf, u32 len)
 {
-    WCHNET_SocketSend(this->SocketIdForListen, buf, &len);
+    if(this->SocketIdForListen != UINT8_MAX)
+    {
+        WCHNET_SocketSend(this->SocketIdForListen + 1  /*WTF         */, buf, &len);
+    }
 }
