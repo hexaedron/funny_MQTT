@@ -49,12 +49,17 @@ int main()
 
         if(myTimer.ready())
         {
-            char buf[14];
-            itoa(millis32(), buf, 10);
-            size_t len = strlen(buf);
-            buf[len] = '\n';
-            buf[len + 1] = '\r';
-            myServer.sendPacket((uint8_t*) buf, len + 2);
+            //char buf[14];
+            //itoa(millis32(), buf, 10);
+            //size_t len = strlen(buf);
+            //buf[len] = '\n';
+            //buf[len + 1] = '\r';
+            //myServer.sendPacket((uint8_t*) buf, len + 2);
+
+            uint16_t length = 0;
+            uint8_t* buf = myServer.getRecvBuf(&length);
+            myServer.sendPacket(buf, length);
+            myServer.flushRecvBuf();
         }
 
         /*Query the Ethernet global interrupt,

@@ -141,7 +141,7 @@ bool tcpServer::createTcpSocketListen(void)
  */
 void tcpServer::dataLoopback(u8 id)
 {
-#if 1
+#if 0
     u8 i;
     u32 len;
     u32 endAddr = SocketInf[id].RecvStartPoint + SocketInf[id].RecvBufLen;       //Receive buffer end address
@@ -155,18 +155,20 @@ void tcpServer::dataLoopback(u8 id)
     i = WCHNET_SocketSend(id, (u8 *) SocketInf[id].RecvReadPoint, &len);        //send data
     if (i == WCHNET_ERR_SUCCESS) {
         WCHNET_SocketRecv(id, NULL, &len);                                      //Clear sent data
-    }
-#else
+    } 
+#else 
     uint32_t len, totallen;
     uint8_t *p = MyBuf, TransCnt = 255;
 
     len = WCHNET_SocketRecvLen(id, NULL);                                //query length
-    printf("Receive Len = %d\r\n", len);
+    //printf("Receive Len = %d\r\n", len);
     totallen = len;
+    this->bufLen = len; 
     WCHNET_SocketRecv(id, MyBuf, &len);                                  //Read the data of the receive buffer into MyBuf
-    while(1){
+    while(1)
+    {
         len = totallen;
-        WCHNET_SocketSend(id, p, &len);                                  //Send the data
+        //WCHNET_SocketSend(id, p, &len);                                  //Send the data
         totallen -= len;                                                 //Subtract the sent length from the total length
         p += len;                                                        //offset buffer pointer
         if( !--TransCnt )  break;                                        //Timeout exit
@@ -294,8 +296,22 @@ uint8_t tcpServer::queryGlobalInt()
  */
 void tcpServer::sendPacket(u8 *buf, u32 len)
 {
-    if(this->SocketIdForListen != UINT8_MAX)
+    if(len > 0)
     {
-        WCHNET_SocketSend(this->SocketIdForListen + 1  /*WTF         */, buf, &len);
+        if(this->SocketIdForListen != UINT8_MAX)
+        {
+            WCHNET_SocketSend(this->SocketIdForListen + 1  /*WTF         */, buf, &len);
+        }
     }
+}
+
+uint8_t* tcpServer::getRecvBuf(uint16_t* len)
+{
+    *len = this->bufLen;
+    return this->MyBuf;
+}
+
+void tcpServer::flushRecvBuf(void)
+{
+    this->bufLen = 0;
 }
