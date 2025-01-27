@@ -7,6 +7,7 @@
 #include "simpleTimer.h"
 
 #include "SystemInit120_HSE32.h"
+#include "getSysCoreClock.h"
 
 
 #include "eth_driver.h"
@@ -27,7 +28,8 @@ int main()
 #ifdef WCH_FAST_INTERRUPT_ENABLED
 	__set_INTSYSCR(0x3); // [Experimental] enable fast interrupt feature
 #endif
-	system_initSystick();
+	//system_initSystick(getSystemCoreClock208());
+    system_initSystick(FUNCONF_SYSTEM_CORE_CLOCK);
 
     //funGpioInitAll();
 
@@ -39,7 +41,7 @@ int main()
    }
 
 
-    simpleTimer32 myTimer(2000UL);
+    simpleTimer32 myTimer(1000UL);
 
     while(1)
     {
@@ -49,12 +51,12 @@ int main()
 
         if(myTimer.ready())
         {
-            //char buf[14];
-            //itoa(millis32(), buf, 10);
-            //size_t len = strlen(buf);
-            //buf[len] = '\n';
-            //buf[len + 1] = '\r';
-            //myServer.sendPacket((uint8_t*) buf, len + 2);
+            char buff[14];
+            itoa(millis32(), buff, 10);
+            size_t len = strlen(buff);
+            buff[len] = '\n';
+            buff[len + 1] = '\r';
+            myServer.sendPacket((uint8_t*) buff, len + 2);
 
             uint16_t length = 0;
             uint8_t* buf = myServer.getRecvBuf(&length);
