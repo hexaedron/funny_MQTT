@@ -28,8 +28,8 @@ int main()
 #ifdef WCH_FAST_INTERRUPT_ENABLED
 	__set_INTSYSCR(0x3); // [Experimental] enable fast interrupt feature
 #endif
-	//system_initSystick(getSystemCoreClock208());
-    system_initSystick(FUNCONF_SYSTEM_CORE_CLOCK);
+	
+    system_initSystick();
 
     //funGpioInitAll();
 
@@ -51,12 +51,12 @@ int main()
 
         if(myTimer.ready())
         {
-            char buff[14];
-            itoa(millis32(), buff, 10);
-            size_t len = strlen(buff);
-            buff[len] = '\n';
-            buff[len + 1] = '\r';
-            myServer.sendPacket((uint8_t*) buff, len + 2);
+            //char buff[14];
+            //itoa(millis32(), buff, 10);
+            //size_t len = strlen(buff);
+            //buff[len] = '\n';
+            //buff[len + 1] = '\r';
+            //myServer.sendPacket((uint8_t*) buff, len + 2);
 
             uint16_t length = 0;
             uint8_t* buf = myServer.getRecvBuf(&length);
