@@ -1,18 +1,16 @@
 #include <ch32v003fun.h>
+
 #include "funny_defs.h"
+#include "funny_time.h"
+#include "simpleTimer.h"
+#include "SystemInit120_HSE32.h"
+
+#include "eth_driver.h"
+#include "tcpServer.h"
 
 #include <cstdlib>
 
-#include "funny_time.h"
-#include "simpleTimer.h"
-
-#include "SystemInit120_HSE32.h"
-#include "getSysCoreClock.h"
-
-
-#include "eth_driver.h"
-
-#include "tcpServer.h"
+#include "GTimer.h"
 
 static uint8_t IPAddr[4]    = { 192, 168, 1, 43 };                   //IP address
 static uint8_t GWIPAddr[4]  = { 192, 168, 1, 1 };                    //Gateway IP address
@@ -41,7 +39,11 @@ int main()
    }
 
 
-    simpleTimer32 myTimer(1000UL);
+    //simpleTimer32 myTimer(1000UL);
+    GTimer<millis32> myTimer(1000);
+    myTimer.setMode(GTMode::Interval);
+    myTimer.keepPhase(true);
+    myTimer.start();
 
     while(1)
     {
@@ -49,7 +51,7 @@ int main()
          * which needs to be called cyclically*/
         myServer.mainTask();
 
-        if(myTimer.ready())
+        if(myTimer)
         {
             //char buff[14];
             //itoa(millis32(), buff, 10);
