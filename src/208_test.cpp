@@ -5,8 +5,8 @@
 #include "simpleTimer.h"
 #include "SystemInit120_HSE32.h"
 
-#include "eth_driver.h"
 #include "ethIF.h"
+#include "tcpServer.h"
 
 #include <cstdlib>
 
@@ -38,6 +38,8 @@ int main()
         while (1){}  
    }
 
+   tcpServer myServer(&myIF, 1000);
+
 
     //simpleTimer32 myTimer(1000UL);
     GTimer<millis32> myTimer(1000);
@@ -60,10 +62,10 @@ int main()
             //buff[len + 1] = '\r';
             //myServer.sendPacket((uint8_t*) buff, len + 2);
 
-            //uint16_t length = 0;
-            //uint8_t* buf = myServer.getRecvBuf(&length);
-            //myServer.sendPacket(buf, length);
-            //myServer.flushRecvBuf();
+            uint16_t length = 0;
+            uint8_t* buf = myServer.getRecvBuf(&length);
+            myServer.sendPacket(buf, length);
+            myServer.flushRecvBuf();
         }
 
         /*Query the Ethernet global interrupt,
