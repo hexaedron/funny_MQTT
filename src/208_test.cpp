@@ -6,7 +6,7 @@
 #include "SystemInit120_HSE32.h"
 
 #include "eth_driver.h"
-#include "tcpServer.h"
+#include "ethIF.h"
 
 #include <cstdlib>
 
@@ -31,9 +31,9 @@ int main()
 
     //funGpioInitAll();
 
-   tcpServer myServer(IPAddr, GWIPAddr, IPMask, srcport);
-   myServer.configKeepAlive();
-   if(!myServer.init())
+   ethIF myIF(IPAddr, GWIPAddr, IPMask);
+   myIF.configKeepAlive();
+   if(!myIF.init())
    {
         while (1){}  
    }
@@ -49,7 +49,7 @@ int main()
     {
         /*Ethernet library main task function,
          * which needs to be called cyclically*/
-        myServer.mainTask();
+        myIF.mainTask();
 
         if(myTimer)
         {
@@ -60,17 +60,17 @@ int main()
             //buff[len + 1] = '\r';
             //myServer.sendPacket((uint8_t*) buff, len + 2);
 
-            uint16_t length = 0;
-            uint8_t* buf = myServer.getRecvBuf(&length);
-            myServer.sendPacket(buf, length);
-            myServer.flushRecvBuf();
+            //uint16_t length = 0;
+            //uint8_t* buf = myServer.getRecvBuf(&length);
+            //myServer.sendPacket(buf, length);
+            //myServer.flushRecvBuf();
         }
 
         /*Query the Ethernet global interrupt,
          * if there is an interrupt, call the global interrupt handler*/
-        if(myServer.queryGlobalInt())
+        if(myIF.queryGlobalInt())
         {
-            myServer.handleGlobalInt();
+            myIF.handleGlobalInt();
         }
     }
 }
