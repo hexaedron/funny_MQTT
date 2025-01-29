@@ -141,30 +141,14 @@ bool tcpServer::createTcpSocketListen(void)
  */
 void tcpServer::dataLoopback(u8 id)
 {
-#if 0
-    u8 i;
-    u32 len;
-    u32 endAddr = SocketInf[id].RecvStartPoint + SocketInf[id].RecvBufLen;       //Receive buffer end address
-
-    if ((SocketInf[id].RecvReadPoint + SocketInf[id].RecvRemLen) > endAddr) {    //Calculate the length of the received data
-        len = endAddr - SocketInf[id].RecvReadPoint;
-    }
-    else {
-        len = SocketInf[id].RecvRemLen;
-    }
-    i = WCHNET_SocketSend(id, (u8 *) SocketInf[id].RecvReadPoint, &len);        //send data
-    if (i == WCHNET_ERR_SUCCESS) {
-        WCHNET_SocketRecv(id, NULL, &len);                                      //Clear sent data
-    } 
-#else 
     uint32_t len, totallen;
-    uint8_t *p = MyBuf, TransCnt = 255;
+    uint8_t *p = retBuf, TransCnt = 255;
 
     len = WCHNET_SocketRecvLen(id, NULL);                                //query length
     //printf("Receive Len = %d\r\n", len);
     totallen = len;
     this->bufLen = len; 
-    WCHNET_SocketRecv(id, MyBuf, &len);                                  //Read the data of the receive buffer into MyBuf
+    WCHNET_SocketRecv(id, retBuf, &len);                                  //Read the data of the receive buffer into retBuf
     while(1)
     {
         len = totallen;
@@ -175,7 +159,6 @@ void tcpServer::dataLoopback(u8 id)
         if(totallen) continue;                                           //If the data is not sent, continue to send
         break;                                                           //After sending, exit
     }
-#endif
 }
 
 /*********************************************************************
@@ -308,7 +291,7 @@ void tcpServer::sendPacket(u8 *buf, u32 len)
 uint8_t* tcpServer::getRecvBuf(uint16_t* len)
 {
     *len = this->bufLen;
-    return this->MyBuf;
+    return this->retBuf;
 }
 
 void tcpServer::flushRecvBuf(void)

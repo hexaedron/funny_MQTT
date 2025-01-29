@@ -14,7 +14,7 @@ private:
     uint8_t SocketIdForListen = UINT8_MAX;                                   //Socket for Listening
     uint8_t socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
-    uint8_t MyBuf[RECE_BUF_LEN];
+    uint8_t retBuf[RECE_BUF_LEN];
     uint16_t bufLen = 0;
     bool keepAlive = false;
     struct _KEEP_CFG cfg;
