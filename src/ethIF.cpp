@@ -1,4 +1,5 @@
 #include "ethIF.h"
+#include <cstdlib>
 
 ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
 {
@@ -6,7 +7,24 @@ ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
     this->IPAddr    = ipaddr;
     this->GWIPAddr  = gwipaddr;
     this->IPMask    = ipmask;
-    //this->srcport   = ipport;
+}
+
+ethIF::ethIF()
+{
+    #define PREFIX_LEN 10
+    char buf[PREFIX_LEN + 13] = "SMARTCUBE-";
+    const char symbols[17] = "0123456789ABCDEF";
+    
+    for (int i = 0; i < 6; i++) 
+    {
+        // Преобразуем каждый байт в два символа в 16-ричной системе
+        buf[PREFIX_LEN + i*2] = symbols[MACAddr[i] >> 4];   // Старший nibble
+        buf[PREFIX_LEN + i*2 + 1] = symbols[MACAddr[i] & 0x0F]; // Младший nibble
+    }
+    buf[PREFIX_LEN + 12] = '\0';
+
+    WCHNET_DHCPSetHostname(buf);
+    #undef PREFIX_LEN
 }
 
 ethIF::~ethIF()
@@ -261,7 +279,7 @@ void ethIF::handleGlobalInt(void)
 void ethIF::mainTask()
 {
     WCHNET_MainTask();
-    
+
     /*Query the Ethernet global interrupt,
      * if there is an interrupt, call the global interrupt handler*/
     if(WCHNET_QueryGlobalInt())

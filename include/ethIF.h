@@ -48,5 +48,6 @@ public:
     //uint8_t* getRecvBuf(uint16_t* len);
     //void flushRecvBuf(void);
     ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask);
+    ethIF(); // DCHP mode
     ~ethIF();
 };

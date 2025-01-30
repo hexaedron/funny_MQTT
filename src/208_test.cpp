@@ -32,6 +32,7 @@ int main()
     //funGpioInitAll();
 
    ethIF myIF(IPAddr, GWIPAddr, IPMask);
+   //ethIF myIF;
    myIF.configKeepAlive();
    if(!myIF.init())
    {
