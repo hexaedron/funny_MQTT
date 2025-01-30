@@ -32,6 +32,7 @@ private:
     void tim2Init(void);
     void mStopIfError(u8 iError);
     void handleSockInt(u8 socketid, u8 intstat);
+    void handleGlobalInt(void);
 
 public:
     void setSrvRetBuf(sRetBuf* newRetBuf);
@@ -42,9 +43,7 @@ public:
     //void setIPPort(uint16_t port);
     void configKeepAlive(uint32_t KLIdle = 20000, uint32_t KLIntvl = 15000, uint32_t KLCount = 9);
     bool init(void);
-    void handleGlobalInt(void);
     void mainTask(void);
-    uint8_t queryGlobalInt(void);
     void sendSrvPacket(u8 *buf, u32 len);
     //uint8_t* getRecvBuf(uint16_t* len);
     //void flushRecvBuf(void);

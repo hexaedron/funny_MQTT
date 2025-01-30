@@ -68,12 +68,6 @@ int main()
             myServer.flushRecvBuf();
         }
 
-        /*Query the Ethernet global interrupt,
-         * if there is an interrupt, call the global interrupt handler*/
-        if(myIF.queryGlobalInt())
-        {
-            myIF.handleGlobalInt();
-        }
     }
 }
 

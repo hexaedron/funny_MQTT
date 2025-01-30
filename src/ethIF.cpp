@@ -261,11 +261,13 @@ void ethIF::handleGlobalInt(void)
 void ethIF::mainTask()
 {
     WCHNET_MainTask();
-}
-
-uint8_t ethIF::queryGlobalInt()
-{
-    return WCHNET_QueryGlobalInt();
+    
+    /*Query the Ethernet global interrupt,
+     * if there is an interrupt, call the global interrupt handler*/
+    if(WCHNET_QueryGlobalInt())
+    {
+        this->handleGlobalInt();
+    }
 }
 
 /*********************************************************************
