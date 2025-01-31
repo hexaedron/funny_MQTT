@@ -1,6 +1,44 @@
 #include "ethIF.h"
 #include <cstdlib>
 
+uint8_t dhcpRet[16];
+
+//uint8_t ethIF::WCHNET_DHCPCallBack(u8 status, void *arg)
+extern "C" uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
+{
+    u8 *p;
+    //u8 tmp[4] = {0, 0, 0, 0};
+
+    if(!status)
+    {
+        p = (uint8_t*)arg;
+        /*If the obtained IP is the same as the last IP, exit this function.*/
+        //if(!memcmp(IPAddr, p ,sizeof(IPAddr)))
+        //    return READY;
+        /*Determine whether it is the first successful IP acquisition*/
+        //if(memcmp(IPAddr, tmp ,sizeof(IPAddr))){
+            /*The obtained IP is different from the last value,
+             * then disconnect the last connection.*/
+            //WCHNET_SocketClose(SocketId, TCP_CLOSE_NORMAL);
+        //}
+        //memcpy(IPAddr, p, 4);
+        //memcpy(GWIPAddr, &p[4], 4);
+        //memcpy(IPMask, &p[8], 4);
+        memcpy(dhcpRet, p, 16);
+        //WCHNET_CreateTcpSocket();                                                   //Create a TCP connection
+        return READY;
+    }
+    else
+    {
+        /*Determine whether it is the first successful IP acquisition*/
+        //if(memcmp(IPAddr, tmp ,sizeof(IPAddr))){
+            /*The obtained IP is different from the last value*/
+            //WCHNET_SocketClose(SocketId, TCP_CLOSE_NORMAL);
+        //}
+        return NoREADY;
+    }
+}
+
 ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
 {
     WCHNET_GetMacAddr(this->MACAddr);
@@ -11,6 +49,10 @@ ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
 
 ethIF::ethIF()
 {
+    WCHNET_GetMacAddr(this->MACAddr);
+    //(uint32_t&)(this->IPAddr) = 0UL;
+    this->IPAddr[0] = 0;
+
     #define PREFIX_LEN 10
     char buf[PREFIX_LEN + 13] = "SMARTCUBE-";
     const char symbols[17] = "0123456789ABCDEF";
@@ -25,6 +67,7 @@ ethIF::ethIF()
 
     WCHNET_DHCPSetHostname(buf);
     #undef PREFIX_LEN
+
 }
 
 ethIF::~ethIF()
@@ -74,6 +117,15 @@ bool ethIF::init(void)
     }
     
     memset(socket, 0xff, WCHNET_MAX_SOCKET_NUM);
+
+    if(this->IPAddr[0] == 0)
+    {
+        uint8_t ret = WCHNET_DHCPStart(WCHNET_DHCPCallBack);
+        memcpy(IPAddr, dhcpRet, 4);
+        memcpy(GWIPAddr, &dhcpRet[4], 4);
+        memcpy(IPMask, &dhcpRet[8], 4);
+        return ret;
+    }
     
     //return this->createTcpSocketListen();
     return true;

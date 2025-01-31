@@ -33,6 +33,7 @@ private:
     void mStopIfError(u8 iError);
     void handleSockInt(u8 socketid, u8 intstat);
     void handleGlobalInt(void);
+    //uint8_t WCHNET_DHCPCallBack(u8 status, void *arg);
 
 public:
     void setSrvRetBuf(sRetBuf* newRetBuf);
