@@ -2,9 +2,12 @@
 #include <cstdlib>
 
 uint8_t dhcpRet[16];
+static uint8_t l_IPAddr[4]    = { 0, 0, 0, 0 };                   //IP address
+static uint8_t l_GWIPAddr[4]  = { 0, 0, 0, 0 };                    //Gateway IP address
+static uint8_t l_IPMask[4]    = { 0, 0, 0, 0 };                  //subnet mask
 
 //uint8_t ethIF::WCHNET_DHCPCallBack(u8 status, void *arg)
-extern "C" uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
+extern "C" __attribute__((used)) uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
 {
     u8 *p;
     //u8 tmp[4] = {0, 0, 0, 0};
@@ -50,8 +53,10 @@ ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
 ethIF::ethIF()
 {
     WCHNET_GetMacAddr(this->MACAddr);
-    //(uint32_t&)(this->IPAddr) = 0UL;
-    this->IPAddr[0] = 0;
+
+    this->IPAddr = l_IPAddr;
+    this->GWIPAddr = l_GWIPAddr;
+    this->IPMask = l_IPMask;
 
     #define PREFIX_LEN 10
     char buf[PREFIX_LEN + 13] = "SMARTCUBE-";
