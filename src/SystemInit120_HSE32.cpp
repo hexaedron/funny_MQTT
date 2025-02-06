@@ -1,4 +1,5 @@
-#include <ch32v003fun.h>
+#include <ch32fun.h>
+#include <ch32v20xhw.h>
 
 #define RCC_PPRE1_DIV1                          ((uint32_t)0x00000000) /* PPRE1 not divided */
 #define RCC_PPRE1_DIV2                          ((uint32_t)0x00000400) /* PPRE1 divided by 2 */

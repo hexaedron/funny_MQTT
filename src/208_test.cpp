@@ -1,4 +1,5 @@
-#include <ch32v003fun.h>
+#include <ch32fun.h>
+#include <ch32v20xhw.h>
 
 #include "funny_defs.h"
 #include "funny_time.h"
@@ -21,11 +22,6 @@ uint16_t srcport = 1000;
 int main()
 {  
     SystemInit120_HSE32();
-
-
-#ifdef WCH_FAST_INTERRUPT_ENABLED
-	__set_INTSYSCR(0x3); // [Experimental] enable fast interrupt feature
-#endif
 	
     system_initSystick();
 

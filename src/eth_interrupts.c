@@ -9,7 +9,8 @@
 * Attention: This software (modified or not) and binary are used for 
 * microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
-#include <ch32v003fun.h>
+#include <ch32fun.h>
+#include <ch32v20xhw.h>
 #include "eth_driver.h"
 
 #ifdef __cplusplus

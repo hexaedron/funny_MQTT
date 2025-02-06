@@ -19,7 +19,8 @@
 #include "eth_defines.h"
 
 //include "debug.h"
-#include <ch32v003fun.h>
+#include <ch32fun.h>
+#include <ch32v20xhw.h>
 #include "stdint.h"
 
 #define ROM_CFG_USERADR_ID                      0x1FFFF7E8
