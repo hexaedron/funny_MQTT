@@ -13,10 +13,10 @@
 
 #include "GTimer.h"
 
-static uint8_t IPAddr[4]    = { 192, 168, 1, 43 };                   //IP address
-static uint8_t GWIPAddr[4]  = { 192, 168, 1, 1 };                    //Gateway IP address
-static uint8_t IPMask[4]    = { 255, 255, 255, 0 };                  //subnet mask
-uint16_t srcport = 1000; 
+//static uint8_t IPAddr[4]    = {0,0,0,0};//{ 192, 168, 1, 43 };                   //IP address
+//static uint8_t GWIPAddr[4]  = {0,0,0,0};//{ 192, 168, 1, 1 };                    //Gateway IP address
+//static uint8_t IPMask[4]    = {0,0,0,0};//{ 255, 255, 255, 0 };                  //subnet mask
+//uint16_t srcport = 1000; 
 
 
 int main()

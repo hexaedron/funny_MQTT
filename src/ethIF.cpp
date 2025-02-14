@@ -1,13 +1,15 @@
 #include "ethIF.h"
 #include <cstdlib>
 
-uint8_t dhcpRet[16] = {'z'};
+//static uint8_t dhcpRet[16] = {'z'};
 static uint8_t l_IPAddr[4]    = { 0, 0, 0, 0 };                   //IP address
 static uint8_t l_GWIPAddr[4]  = { 0, 0, 0, 0 };                    //Gateway IP address
 static uint8_t l_IPMask[4]    = { 0, 0, 0, 0 };                  //subnet mask
+static bool dhcpFlag = false;
 
 //uint8_t ethIF::WCHNET_DHCPCallBack(u8 status, void *arg)
-//extern "C" __attribute__((used))
+extern "C" uint8_t WCHNET_DHCPCallBack(u8 status, void *arg);
+
 uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
 {
     u8 *p;
@@ -25,10 +27,10 @@ uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
              * then disconnect the last connection.*/
             //WCHNET_SocketClose(SocketId, TCP_CLOSE_NORMAL);
         //}
-        //memcpy(IPAddr, p, 4);
-        //memcpy(GWIPAddr, &p[4], 4);
-        //memcpy(IPMask, &p[8], 4);
-        memcpy(dhcpRet, p, 16);
+        memcpy(l_IPAddr, p, 4);
+        memcpy(l_GWIPAddr, &p[4], 4);
+        memcpy(l_IPMask, &p[8], 4);
+        //memcpy(dhcpRet, p, 16);
         //WCHNET_CreateTcpSocket();                                                   //Create a TCP connection
         return READY;
     }
@@ -126,11 +128,12 @@ bool ethIF::init(void)
 
     if(this->IPAddr[0] == 0)
     {
-        uint8_t ret = WCHNET_DHCPStart(WCHNET_DHCPCallBack);
-        memcpy(IPAddr, dhcpRet, 4);
-        memcpy(GWIPAddr, &dhcpRet[4], 4);
-        memcpy(IPMask, &dhcpRet[8], 4);
-        return ret;
+        //volatile dhcp_callback cb = WCHNET_DHCPCallBack;
+        /*uint8_t ret =*/ WCHNET_DHCPStart(WCHNET_DHCPCallBack);
+        //memcpy(IPAddr, dhcpRet, 4);
+        //memcpy(GWIPAddr, &dhcpRet[4], 4);
+        //memcpy(IPMask, &dhcpRet[8], 4);
+        return true;
     }
     
     //return this->createTcpSocketListen();
