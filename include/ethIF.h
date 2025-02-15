@@ -10,6 +10,13 @@ typedef struct
     uint16_t bufLen = 0;
 } sRetBuf;
 
+typedef enum
+{
+    unreach,
+    ipConflict,
+    linkSuccess,
+    unknown
+} e_phyStatus;
 
 class ethIF
 {
@@ -25,6 +32,7 @@ private:
     sRetBuf* srvRetBuf;
     bool keepAlive = false;
     struct _KEEP_CFG cfg;
+    e_phyStatus phyStatus = e_phyStatus::unknown;
 
     void dataLoopback(u8 id);
     void tim2Init(void);
@@ -43,6 +51,8 @@ public:
     void mainTask(void);
     void sendSrvPacket(u8 *buf, u32 len);
     bool isDHCPOK(void);
+    e_phyStatus getPHYStatus(void);
+    bool isPHYOK(void);
     ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask);
     ethIF(); // DCHP mode
     ~ethIF();

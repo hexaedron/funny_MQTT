@@ -306,18 +306,18 @@ void ethIF::handleGlobalInt(void)
     intstat = WCHNET_GetGlobalInt();                              //get global interrupt flag
     if (intstat & GINT_STAT_UNREACH)                              //Unreachable interrupt
     {
-        //printf("GINT_STAT_UNREACH\r\n");
+        this->phyStatus = e_phyStatus::unreach;
     }
     if (intstat & GINT_STAT_IP_CONFLI)                            //IP conflict
     {
-        //printf("GINT_STAT_IP_CONFLI\r\n");
+        this->phyStatus = e_phyStatus::ipConflict;
     }
     if (intstat & GINT_STAT_PHY_CHANGE)                           //PHY status change
     {
         i = WCHNET_GetPHYStatus();
         if (i & PHY_Linked_Status)
         {    
-            //printf("PHY Link Success\r\n");
+            this->phyStatus = e_phyStatus::linkSuccess;
         }
     }
     if (intstat & GINT_STAT_SOCKET) {                             //socket related interrupt
@@ -368,4 +368,14 @@ void ethIF::setSrvRetBuf(sRetBuf* newRetBuf)
 bool ethIF::isDHCPOK(void)
 {
     return dhcpOKFlag;
+}
+
+e_phyStatus ethIF::getPHYStatus(void)
+{
+    return this->phyStatus;
+}
+
+bool ethIF::isPHYOK(void)
+{
+    return (this->phyStatus == e_phyStatus::linkSuccess);
 }
