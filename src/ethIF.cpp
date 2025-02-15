@@ -4,7 +4,7 @@
 static uint8_t l_IPAddr[4]    = { 0, 0, 0, 0 };                   //IP address
 static uint8_t l_GWIPAddr[4]  = { 0, 0, 0, 0 };                    //Gateway IP address
 static uint8_t l_IPMask[4]    = { 0, 0, 0, 0 };                  //subnet mask
-static bool dhcpFlag = false;
+static bool dhcpOKFlag = false;
 
 //uint8_t ethIF::WCHNET_DHCPCallBack(u8 status, void *arg)
 extern "C" uint8_t WCHNET_DHCPCallBack(u8 status, void *arg);
@@ -12,7 +12,6 @@ extern "C" uint8_t WCHNET_DHCPCallBack(u8 status, void *arg);
 uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
 {
     u8 *p;
-    //u8 tmp[4] = {0, 0, 0, 0};
 
     if(!status)
     {
@@ -29,7 +28,7 @@ uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
         memcpy(l_IPAddr, p, 4);
         memcpy(l_GWIPAddr, &p[4], 4);
         memcpy(l_IPMask, &p[8], 4);
-        //memcpy(dhcpRet, p, 16);
+        dhcpOKFlag = true;
         //WCHNET_CreateTcpSocket();                                                   //Create a TCP connection
         return READY;
     }
@@ -40,6 +39,7 @@ uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
             /*The obtained IP is different from the last value*/
             //WCHNET_SocketClose(SocketId, TCP_CLOSE_NORMAL);
         //}
+        dhcpOKFlag = false;
         return NoREADY;
     }
 }
@@ -123,10 +123,14 @@ bool ethIF::init(void)
     if(this->IPAddr[0] == 0)
     {
         WCHNET_DHCPStart(WCHNET_DHCPCallBack);
+        while (!dhcpOKFlag)
+        {
+            this->mainTask();
+        }
+        
         return true;
     }
     
-    //return this->createTcpSocketListen();
     return true;
 }
 
@@ -359,4 +363,9 @@ void ethIF::sendSrvPacket(u8 *buf, u32 len)
 void ethIF::setSrvRetBuf(sRetBuf* newRetBuf)
 {
     this->srvRetBuf= newRetBuf;
+}
+
+bool ethIF::isDHCPOK(void)
+{
+    return dhcpOKFlag;
 }

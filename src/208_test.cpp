@@ -37,8 +37,6 @@ int main()
 
    tcpServer myServer(&myIF, 1000);
 
-
-    //simpleTimer32 myTimer(1000UL);
     GTimer<millis32> myTimer(1000);
     myTimer.setMode(GTMode::Interval);
     myTimer.keepPhase(true);
