@@ -1,7 +1,6 @@
 #include "ethIF.h"
 #include <cstdlib>
 
-//static uint8_t dhcpRet[16] = {'z'};
 static uint8_t l_IPAddr[4]    = { 0, 0, 0, 0 };                   //IP address
 static uint8_t l_GWIPAddr[4]  = { 0, 0, 0, 0 };                    //Gateway IP address
 static uint8_t l_IPMask[4]    = { 0, 0, 0, 0 };                  //subnet mask
@@ -67,9 +66,9 @@ ethIF::ethIF()
     
     for (int i = 0; i < 6; i++) 
     {
-        // Преобразуем каждый байт в два символа в 16-ричной системе
-        buf[PREFIX_LEN + i*2] = symbols[MACAddr[i] >> 4];   // Старший nibble
-        buf[PREFIX_LEN + i*2 + 1] = symbols[MACAddr[i] & 0x0F]; // Младший nibble
+        // Convert each byte to 2 hex symbols
+        buf[PREFIX_LEN + i*2] = symbols[MACAddr[i] >> 4];   // High nibble
+        buf[PREFIX_LEN + i*2 + 1] = symbols[MACAddr[i] & 0x0F]; // Low nibble
     }
     buf[PREFIX_LEN + 12] = '\0';
 
@@ -97,11 +96,6 @@ void ethIF::setIPMask(uint8_t* mask)
     this->IPMask = mask;
 }
 
-//void ethIF::setIPPort(uint16_t port)
-//{
-//    this->srcport = port;
-//}
-
 void ethIF::configKeepAlive(uint32_t KLIdle, uint32_t KLIntvl, uint32_t KLCount)
 {
     this->keepAlive   = true;
@@ -128,11 +122,7 @@ bool ethIF::init(void)
 
     if(this->IPAddr[0] == 0)
     {
-        //volatile dhcp_callback cb = WCHNET_DHCPCallBack;
-        /*uint8_t ret =*/ WCHNET_DHCPStart(WCHNET_DHCPCallBack);
-        //memcpy(IPAddr, dhcpRet, 4);
-        //memcpy(GWIPAddr, &dhcpRet[4], 4);
-        //memcpy(IPMask, &dhcpRet[8], 4);
+        WCHNET_DHCPStart(WCHNET_DHCPCallBack);
         return true;
     }
     
@@ -225,14 +215,12 @@ void ethIF::dataLoopback(u8 id)
     uint8_t *p = this->srvRetBuf->retBuf, TransCnt = 255;
 
     len = WCHNET_SocketRecvLen(id, NULL);                                //query length
-    //printf("Receive Len = %d\r\n", len);
     totallen = len;
     this->srvRetBuf->bufLen = len; 
     WCHNET_SocketRecv(id, this->srvRetBuf->retBuf, &len);                                  //Read the data of the receive buffer into retBuf
     while(1)
     {
         len = totallen;
-        //WCHNET_SocketSend(id, p, &len);                                  //Send the data
         totallen -= len;                                                 //Subtract the sent length from the total length
         p += len;                                                        //offset buffer pointer
         if( !--TransCnt )  break;                                        //Timeout exit
@@ -372,15 +360,3 @@ void ethIF::setSrvRetBuf(sRetBuf* newRetBuf)
 {
     this->srvRetBuf= newRetBuf;
 }
-
-//
-//uint8_t* ethIF::getRecvBuf(uint16_t* len)
-//{
-//    *len = this->bufLen;
-//    return this->retBuf;
-//}
-//
-//void ethIF::flushRecvBuf(void)
-//{
-//    this->bufLen = 0;
-//}
