@@ -8,12 +8,14 @@
 
 #include "ethIF.h"
 #include "tcpServer.h"
+#include "tcpClient.h"
 
 #include <cstdlib>
 
 #include "GTimer.h"
 
 //static uint8_t IPAddr[4]    = {0,0,0,0};//{ 192, 168, 1, 43 };                   //IP address
+static uint8_t destIPAddr[4]    = { 192, 168, 1, 20 };                   //IP address
 //static uint8_t GWIPAddr[4]  = {0,0,0,0};//{ 192, 168, 1, 1 };                    //Gateway IP address
 //static uint8_t IPMask[4]    = {0,0,0,0};//{ 255, 255, 255, 0 };                  //subnet mask
 //uint16_t srcport = 1000; 
@@ -35,7 +37,8 @@ int main()
         while (1){}  
    }
 
-   tcpServer myServer(&myIF, 1000);
+   //tcpServer myServer(&myIF, 1000);
+   tcpClient myClient(&myIF, destIPAddr, 1000);
 
     GTimer<millis32> myTimer(1000);
     myTimer.setMode(GTMode::Interval);
@@ -50,17 +53,18 @@ int main()
 
         if(myTimer)
         {
-            //char buff[14];
-            //itoa(millis32(), buff, 10);
-            //size_t len = strlen(buff);
-            //buff[len] = '\n';
-            //buff[len + 1] = '\r';
+            char buff[14];
+            itoa(millis32(), buff, 10);
+            size_t len = strlen(buff);
+            buff[len] = '\n';
+            buff[len + 1] = '\r';
             //myServer.sendPacket((uint8_t*) buff, len + 2);
+            myClient.sendPacket((uint8_t*) buff, len + 2);
 
-            uint16_t length = 0;
-            uint8_t* buf = myServer.getRecvBuf(&length);
-            myServer.sendPacket(buf, length);
-            myServer.flushRecvBuf();
+            //uint16_t length = 0;
+            //uint8_t* buf = myServer.getRecvBuf(&length);
+            //myServer.sendPacket(buf, length);
+            //myServer.flushRecvBuf();
         }
 
     }

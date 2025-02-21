@@ -176,14 +176,30 @@ void ethIF::tim2Init(void)
  */
 bool ethIF::createTcpSocketListen(uint8_t* socketid, uint16_t port)
 {
-    SOCK_INF TmpSocketInf;
+    SOCK_INF TmpSocketInf = {0};
 
-    memset((void *) &TmpSocketInf, 0, sizeof(SOCK_INF));
     TmpSocketInf.SourPort = port;
     TmpSocketInf.ProtoType = PROTO_TYPE_TCP;
     if(WCHNET_SocketCreat(socketid, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
         return false;
     if(WCHNET_SocketListen(*socketid) != WCHNET_ERR_SUCCESS)                   //listen for connections
+        return false;
+
+    return true;
+}
+
+bool ethIF::createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport)
+{
+    SOCK_INF TmpSocketInf = {0};
+
+    memcpy((void *) TmpSocketInf.IPAddr, destIP, 4);
+    TmpSocketInf.DesPort = destport;
+    TmpSocketInf.SourPort = this->srcport++;
+    TmpSocketInf.ProtoType = PROTO_TYPE_TCP;
+    TmpSocketInf.RecvBufLen = RECE_BUF_LEN;
+    if(WCHNET_SocketCreat(socketid, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
+        return false;
+    if(WCHNET_SocketConnect(*socketid) != WCHNET_ERR_SUCCESS)                        //make a TCP connection
         return false;
 
     return true;

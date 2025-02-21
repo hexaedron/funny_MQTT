@@ -11,6 +11,7 @@ private:
     sRetBuf retBuf;
     uint8_t* destIPAddress;                     //IP address
     uint16_t destIPPort;
+    uint8_t socket = UINT8_MAX;
 
 public:
     void setDestPort(uint16_t newDestIPPort);

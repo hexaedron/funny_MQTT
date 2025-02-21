@@ -25,6 +25,7 @@ private:
     uint8_t* IPAddr;                     //IP address
     uint8_t* GWIPAddr;                    //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
+    uint16_t srcport = 1000;
 
     uint8_t socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
@@ -45,6 +46,7 @@ public:
     void setGWIPAddr(uint8_t* addr);
     void setIPMask(uint8_t* mask);
     bool createTcpSocketListen(uint8_t* socketid, uint16_t port);
+    bool createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport);
     void configKeepAlive(uint32_t KLIdle = 20000, uint32_t KLIntvl = 15000, uint32_t KLCount = 9);
     bool init(void);
     void mainTask(void);

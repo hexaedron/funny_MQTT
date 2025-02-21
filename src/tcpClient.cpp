@@ -5,6 +5,8 @@ tcpClient::tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPo
     this->ethInterface = eth;
     this->destIPAddress = newDestIPAddress;
     this->destIPPort = newDestIPPort;
+    this->ethInterface->setSrvRetBuf(&this->retBuf);
+    this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort);
 }
 
 tcpClient::~tcpClient()
@@ -23,8 +25,10 @@ void tcpClient::setDestIP(uint8_t* newDestIPAddress)
 
 void tcpClient::sendPacket(u8 *buf, u32 len)
 {
-    //if(len > 0)
-    //    this->ethInterface->sendSrvPacket(buf, len);
+    if(len > 0)
+    {
+        this->ethInterface->sendPacket(this->socket, buf, len);
+    }
 }
 
 uint8_t* tcpClient::getRecvBuf(uint16_t* len)
