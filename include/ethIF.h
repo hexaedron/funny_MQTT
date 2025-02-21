@@ -26,7 +26,6 @@ private:
     uint8_t* GWIPAddr;                    //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
 
-    uint8_t SocketIdForListen = UINT8_MAX;                                   //Socket for Listening
     uint8_t socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
     sRetBuf* srvRetBuf;
@@ -45,11 +44,11 @@ public:
     void setIPAddr(uint8_t* addr);
     void setGWIPAddr(uint8_t* addr);
     void setIPMask(uint8_t* mask);
-    bool createTcpSocketListen(uint16_t port);
+    bool createTcpSocketListen(uint8_t* socketid, uint16_t port);
     void configKeepAlive(uint32_t KLIdle = 20000, uint32_t KLIntvl = 15000, uint32_t KLCount = 9);
     bool init(void);
     void mainTask(void);
-    void sendSrvPacket(u8 *buf, u32 len);
+    void sendPacket(uint8_t socket, u8 *buf, u32 len);
     bool isDHCPOK(void);
     e_phyStatus getPHYStatus(void);
     bool isPHYOK(void);

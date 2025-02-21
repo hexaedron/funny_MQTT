@@ -5,7 +5,7 @@ tcpServer::tcpServer(ethIF* eth, uint16_t ipport)
     this->ethInterface = eth;
     this->srcport   = ipport;
     this->ethInterface->setSrvRetBuf(&this->retBuf);
-    this->ethInterface->createTcpSocketListen(ipport);
+    this->ethInterface->createTcpSocketListen(&this->socket, ipport);
 }
 
 tcpServer::~tcpServer()
@@ -30,7 +30,9 @@ void tcpServer::setIPPort(uint16_t port)
 void tcpServer::sendPacket(u8 *buf, u32 len)
 {
     if(len > 0)
-        this->ethInterface->sendSrvPacket(buf, len);
+    {
+        this->ethInterface->sendPacket(this->socket, buf, len);
+    }
 }
 
 uint8_t* tcpServer::getRecvBuf(uint16_t* len)

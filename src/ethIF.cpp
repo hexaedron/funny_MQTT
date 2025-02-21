@@ -174,16 +174,16 @@ void ethIF::tim2Init(void)
  *
  * @return  none
  */
-bool ethIF::createTcpSocketListen(uint16_t port)
+bool ethIF::createTcpSocketListen(uint8_t* socketid, uint16_t port)
 {
     SOCK_INF TmpSocketInf;
 
     memset((void *) &TmpSocketInf, 0, sizeof(SOCK_INF));
     TmpSocketInf.SourPort = port;
     TmpSocketInf.ProtoType = PROTO_TYPE_TCP;
-    if(WCHNET_SocketCreat(&SocketIdForListen, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
+    if(WCHNET_SocketCreat(socketid, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
         return false;
-    if(WCHNET_SocketListen(SocketIdForListen) != WCHNET_ERR_SUCCESS)                   //listen for connections
+    if(WCHNET_SocketListen(*socketid) != WCHNET_ERR_SUCCESS)                   //listen for connections
         return false;
 
     return true;
@@ -336,11 +336,11 @@ void ethIF::mainTask()
  *
  * @return  none
  */
-void ethIF::sendSrvPacket(u8 *buf, u32 len)
+void ethIF::sendPacket(uint8_t socket, u8 *buf, u32 len)
 {
-    if(this->SocketIdForListen != UINT8_MAX)
+    if(socket != UINT8_MAX)
     {
-        WCHNET_SocketSend(this->SocketIdForListen + 1  /*WTF         */, buf, &len);
+        WCHNET_SocketSend(socket + WCHNET_NUM_TCP_LISTEN, buf, &len);
     }
 
 }
