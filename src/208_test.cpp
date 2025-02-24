@@ -38,9 +38,9 @@ int main()
    }
 
    //tcpServer myServer(&myIF, 1000);
-   tcpClient myClient(&myIF, destIPAddr, 1000);
+   tcpClient myClient(&myIF, destIPAddr, 10000);
 
-    GTimer<millis32> myTimer(1000);
+    GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
     myTimer.keepPhase(true);
     myTimer.start();
@@ -60,6 +60,11 @@ int main()
             buff[len + 1] = '\r';
             //myServer.sendPacket((uint8_t*) buff, len + 2);
             myClient.sendPacket((uint8_t*) buff, len + 2);
+
+            uint16_t length = 0;
+            uint8_t* buf = myClient.getRecvBuf(&length);
+            myClient.sendPacket(buf, length);
+            myClient.flushRecvBuf();
 
             //uint16_t length = 0;
             //uint8_t* buf = myServer.getRecvBuf(&length);
