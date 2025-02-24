@@ -21,9 +21,9 @@ typedef enum
 class ethIF
 {
 private:
-    uint8_t MACAddr[6];                                          //MAC address
-    uint8_t* IPAddr;                     //IP address
-    uint8_t* GWIPAddr;                    //Gateway IP address
+    uint8_t MACAddr[6];                 //MAC address
+    uint8_t* IPAddr;                    //IP address
+    uint8_t* GWIPAddr;                  //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
     uint16_t srcport = 1000;
 
@@ -49,12 +49,13 @@ public:
     bool createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport);
     void configKeepAlive(uint32_t KLIdle = 20000, uint32_t KLIntvl = 15000, uint32_t KLCount = 9);
     bool init(void);
-    void mainTask(void);
-    void sendPacket(uint8_t socket, u8 *buf, u32 len);
+    void mainTask(void); // Should be called in main cycle
+    void sendPacket(uint8_t socket, u8 *buf, u32 len); // Send a packet to a specific socket
     bool isDHCPOK(void);
     e_phyStatus getPHYStatus(void);
     bool isPHYOK(void);
-    ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask);
-    ethIF(); // DCHP mode
+    ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask); // Staic IP mode
+    // DCHP mode
+    ethIF(); 
     ~ethIF();
 };

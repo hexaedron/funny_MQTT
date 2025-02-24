@@ -6,8 +6,8 @@
 #include "simpleTimer.h"
 #include "SystemInit120_HSE32.h"
 
-#include "ethIF.h"
-#include "tcpServer.h"
+//#include "ethIF.h"
+//#include "tcpServer.h"
 #include "tcpClient.h"
 
 #include <cstdlib>
