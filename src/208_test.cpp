@@ -55,23 +55,25 @@ int main()
 
         if(myTimer)
         {
-            char buff[14];
-            itoa(millis32(), buff, 10);
-            size_t len = strlen(buff);
-            buff[len] = '\n';
-            buff[len + 1] = '\r';
-            //myServer.sendPacket((uint8_t*) buff, len + 2);
-            myClient.sendPacket((uint8_t*) buff, len + 2);
+            //myClient.connect();
+                char buff[14];
+                itoa(millis32(), buff, 10);
+                size_t len = strlen(buff);
+                buff[len] = '\n';
+                buff[len + 1] = '\r';
+                //myServer.sendPacket((uint8_t*) buff, len + 2);
+                myClient.sendPacket((uint8_t*) buff, len + 2);
 
-            uint16_t length = 0;
-            uint8_t* buf = myClient.getRecvBuf(&length);
-            myClient.sendPacket(buf, length);
-            myClient.flushRecvBuf();
+                uint16_t length = 0;
+                uint8_t* buf = myClient.getRecvBuf(&length);
+                myClient.sendPacket(buf, length);
+                myClient.flushRecvBuf();
 
-            //uint16_t length = 0;
-            //uint8_t* buf = myServer.getRecvBuf(&length);
-            //myServer.sendPacket(buf, length);
-            //myServer.flushRecvBuf();
+                //uint16_t length = 0;
+                //uint8_t* buf = myServer.getRecvBuf(&length);
+                //myServer.sendPacket(buf, length);
+                //myServer.flushRecvBuf();
+            //if(millis32() > 15000) myClient.disconnect();
         }
 
     }

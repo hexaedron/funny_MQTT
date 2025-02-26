@@ -19,6 +19,8 @@ public:
     void sendPacket(u8 *buf, u32 len);
     uint8_t* getRecvBuf(uint16_t* len);  // Get the data we received from our socket
     void flushRecvBuf(void);
+    bool disconnect(void);
+    bool connect(void);
     tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort);
     ~tcpClient();
 };

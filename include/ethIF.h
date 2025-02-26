@@ -47,6 +47,7 @@ public:
     void setIPMask(uint8_t* mask);
     bool createTcpSocketListen(uint8_t* socketid, uint16_t port);
     bool createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport);
+    bool closeSocket(uint8_t socket);
     void configKeepAlive(uint32_t KLIdle = 20000, uint32_t KLIntvl = 15000, uint32_t KLCount = 9);
     bool init(void);
     void mainTask(void); // Should be called in main cycle

@@ -199,7 +199,7 @@ bool ethIF::createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destpor
     TmpSocketInf.RecvBufLen = RECE_BUF_LEN;
     if(WCHNET_SocketCreat(socketid, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
         return false;
-    if(WCHNET_SocketConnect(*socketid) != WCHNET_ERR_SUCCESS)                        //make a TCP connection
+    if(WCHNET_SocketConnect(*socketid + WCHNET_NUM_TCP_LISTEN) != WCHNET_ERR_SUCCESS)                        //make a TCP connection
         return false;
 
     return true;
@@ -359,6 +359,11 @@ void ethIF::sendPacket(uint8_t socket, u8 *buf, u32 len)
         WCHNET_SocketSend(socket + WCHNET_NUM_TCP_LISTEN, buf, &len);
     }
 
+}
+
+bool ethIF::closeSocket(uint8_t socket)
+{
+    return WCHNET_SocketClose(socket + WCHNET_NUM_TCP_LISTEN, TCP_CLOSE_NORMAL);
 }
 
 void ethIF::setSrvRetBuf(sRetBuf* newRetBuf)

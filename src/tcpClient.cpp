@@ -41,3 +41,13 @@ void tcpClient::flushRecvBuf(void)
 {
     this->retBuf.bufLen = 0;
 }
+
+bool tcpClient::disconnect(void)
+{
+    return this->ethInterface->closeSocket(this->socket);
+}
+
+bool tcpClient::connect(void)
+{
+    return this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort);
+}
