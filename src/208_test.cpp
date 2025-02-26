@@ -16,7 +16,7 @@
 #include "GTimer.h"
 
 //static uint8_t IPAddr[4]    = {0,0,0,0};//{ 192, 168, 1, 43 };                   //IP address
-static uint8_t destIPAddr[4]    = { 192, 168, 1, 20 };                   //IP address
+static uint8_t destIPAddr[4]    = { 192, 168, 1, 253 };                   //IP address
 //static uint8_t GWIPAddr[4]  = {0,0,0,0};//{ 192, 168, 1, 1 };                    //Gateway IP address
 //static uint8_t IPMask[4]    = {0,0,0,0};//{ 255, 255, 255, 0 };                  //subnet mask
 //uint16_t srcport = 1000; 
@@ -41,7 +41,7 @@ int main()
 
    //tcpServer myServer(&myIF, 1000);
    //MQTTClient<PUB_TOPIC_COUNT, SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr, 10000);
-   MQTTClient myClient(&myIF, destIPAddr, 10000);
+   MQTTClient myClient(&myIF, destIPAddr);
 
     GTimer<millis32> myTimer(5000);
     myTimer.setMode(GTMode::Interval);

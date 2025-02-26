@@ -22,7 +22,7 @@ private:
     //int pub_qos = 0;                                   //Publish quality of service
     //int sub_qos = 0;                                   //Subscription quality of service
 public:
-    MQTTClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort): tcpClient(eth, newDestIPAddress, newDestIPPort) {};
+    MQTTClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort = 1883): tcpClient(eth, newDestIPAddress, newDestIPPort) {};
     //bool pushTopic(eMQTTTopicTypes type, const char* topic);
     //void setQOS(int newPubQOS, int newSubQOS);
     void MQTTConnect(char *username, char *password);
