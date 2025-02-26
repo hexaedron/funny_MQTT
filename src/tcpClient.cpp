@@ -51,3 +51,8 @@ bool tcpClient::connect(void)
 {
     return this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort);
 }
+
+char* tcpClient::getDnsName(void)
+{
+    return this->ethInterface->getDnsName();
+}

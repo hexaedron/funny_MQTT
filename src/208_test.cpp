@@ -40,12 +40,18 @@ int main()
    }
 
    //tcpServer myServer(&myIF, 1000);
-   MQTTClient<PUB_TOPIC_COUNT, SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr, 10000);
+   //MQTTClient<PUB_TOPIC_COUNT, SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr, 10000);
+   MQTTClient myClient(&myIF, destIPAddr, 10000);
 
-    GTimer<millis32> myTimer(3000);
+    GTimer<millis32> myTimer(5000);
     myTimer.setMode(GTMode::Interval);
     myTimer.keepPhase(true);
     myTimer.start();
+
+    char usrpwd[]="";
+    myClient.MQTTConnect(usrpwd, usrpwd);
+
+    char uptimeStr[128] = "ch32v208 uptime is  ";
 
     while(1)
     {
@@ -55,25 +61,20 @@ int main()
 
         if(myTimer)
         {
-            //myClient.connect();
-                char buff[14];
-                itoa(millis32(), buff, 10);
-                size_t len = strlen(buff);
-                buff[len] = '\n';
-                buff[len + 1] = '\r';
-                //myServer.sendPacket((uint8_t*) buff, len + 2);
-                myClient.sendPacket((uint8_t*) buff, len + 2);
+            char buf[14];
 
-                uint16_t length = 0;
-                uint8_t* buf = myClient.getRecvBuf(&length);
-                myClient.sendPacket(buf, length);
-                myClient.flushRecvBuf();
+            itoa(millis32() / 1000, buf, 10);
 
-                //uint16_t length = 0;
-                //uint8_t* buf = myServer.getRecvBuf(&length);
-                //myServer.sendPacket(buf, length);
-                //myServer.flushRecvBuf();
-            //if(millis32() > 15000) myClient.disconnect();
+            memcpy(uptimeStr + 19, buf, strlen(buf) + 1);
+            strcat(uptimeStr, " seconds.");
+
+            
+            myClient.MQTTPublish((char*)"ch32topic/test/str", 0, uptimeStr);
+
+            //uint16_t length = 0;
+            //uint8_t* buf = myClient.getRecvBuf(&length);
+            //myClient.sendPacket(buf, length);
+            //myClient.flushRecvBuf();
         }
 
     }

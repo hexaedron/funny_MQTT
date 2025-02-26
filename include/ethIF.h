@@ -26,6 +26,7 @@ private:
     uint8_t* GWIPAddr;                  //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
     uint16_t srcport = 1000;
+    char dnsName[25] = "SMARTCUBE-";    //The DNS name we set by DHCP
 
     uint8_t socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
@@ -39,6 +40,7 @@ private:
     void mStopIfError(u8 iError);
     void handleSockInt(u8 socketid, u8 intstat);
     void handleGlobalInt(void);
+    void populateDNSName(void);
 
 public:
     void setSrvRetBuf(sRetBuf* newRetBuf);
@@ -53,6 +55,7 @@ public:
     void mainTask(void); // Should be called in main cycle
     void sendPacket(uint8_t socket, u8 *buf, u32 len); // Send a packet to a specific socket
     bool isDHCPOK(void);
+    char* getDnsName(void);
     e_phyStatus getPHYStatus(void);
     bool isPHYOK(void);
     ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask); // Staic IP mode

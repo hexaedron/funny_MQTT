@@ -35,6 +35,24 @@ ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
     this->IPAddr    = ipaddr;
     this->GWIPAddr  = gwipaddr;
     this->IPMask    = ipmask;
+    this->populateDNSName();
+}
+
+void ethIF::populateDNSName(void)
+{
+    #define PREFIX_LEN 10
+
+    const char symbols[17] = "0123456789ABCDEF";
+    
+    for (int i = 0; i < 6; i++) 
+    {
+        // Convert each byte to 2 hex symbols
+        this->dnsName[PREFIX_LEN + i*2] = symbols[MACAddr[i] >> 4];   // High nibble
+        this->dnsName[PREFIX_LEN + i*2 + 1] = symbols[MACAddr[i] & 0x0F]; // Low nibble
+    }
+    this->dnsName[PREFIX_LEN + 12] = '\0';
+
+    #undef PREFIX_LEN
 }
 
 ethIF::ethIF()
@@ -45,20 +63,8 @@ ethIF::ethIF()
     this->GWIPAddr = l_GWIPAddr;
     this->IPMask = l_IPMask;
 
-    #define PREFIX_LEN 10
-    char buf[PREFIX_LEN + 13] = "SMARTCUBE-";
-    const char symbols[17] = "0123456789ABCDEF";
-    
-    for (int i = 0; i < 6; i++) 
-    {
-        // Convert each byte to 2 hex symbols
-        buf[PREFIX_LEN + i*2] = symbols[MACAddr[i] >> 4];   // High nibble
-        buf[PREFIX_LEN + i*2 + 1] = symbols[MACAddr[i] & 0x0F]; // Low nibble
-    }
-    buf[PREFIX_LEN + 12] = '\0';
-
-    WCHNET_DHCPSetHostname(buf);
-    #undef PREFIX_LEN
+    this->populateDNSName();
+    WCHNET_DHCPSetHostname(this->dnsName);
 
 }
 
@@ -384,4 +390,9 @@ e_phyStatus ethIF::getPHYStatus(void)
 bool ethIF::isPHYOK(void)
 {
     return (this->phyStatus == e_phyStatus::linkSuccess);
+}
+
+char* ethIF::getDnsName(void)
+{
+    return this->dnsName;
 }
