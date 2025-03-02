@@ -74,3 +74,75 @@ void MQTTClient::MQTTDisconnect(void)
     len = MQTTSerialize_disconnect(buf,sizeof(buf));
     this->sendPacket(buf, len);
 }
+
+bool MQTTClient::isMQTTConnected(void)
+{
+    return (this->MQTTStatus == eMQTTStatus::MQTTConnected) || (this->MQTTStatus == eMQTTStatus::MQTTSuback);
+}
+
+eMQTTStatus MQTTClient::getMQTTStatus(void)
+{
+    return this->MQTTStatus;
+}
+
+void MQTTClient::parsePublishedTopic(uint8_t* buf, uint16_t len)
+{
+    MQTTDeserialize_publish(
+                                &this->lastTopicDup,
+                                &this->lastTopicQos,
+                                &this->lastTopicRetained,
+                                &this->lastTopicPacketID,
+                                &this->lastTopicName,
+                                &this->lastTopicPayload,
+                                &this->lastTopicPayloadlen,
+                                buf,
+                                len
+                            );
+}
+
+void MQTTClient::mainTask(void)
+{
+    uint16_t len = 0;
+    uint8_t* recvBuf = this->getRecvBuf(&len);
+    
+    if(len > 0)
+    {
+        switch (recvBuf[0] >> 4)
+        {
+            case CONNACK:
+                this->MQTTStatus = eMQTTStatus::MQTTConnected;
+            break;
+
+            case PUBLISH:
+                this->MQTTStatus = eMQTTStatus::MQTTPublished;
+                this->parsePublishedTopic(recvBuf, len);
+                if(this->topicCallback != nullptr)
+                {
+                    this->topicCallback(
+                                            this->lastTopicName.cstring, 
+                                            this->lastTopicPayload, 
+                                            this->lastTopicPayloadlen, 
+                                            this->lastTopicQos, 
+                                            this->lastTopicRetained, 
+                                            this->lastTopicDup
+                                        );
+                }
+            break;
+
+            case SUBACK:
+                this->MQTTStatus = eMQTTStatus::MQTTSuback;
+            break;
+        
+            default:
+                this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+            break;
+        }
+
+        this->flushRecvBuf();
+    }
+}
+
+void MQTTClient::registerTopicCallback(f_topicCallback cb)
+{
+    this->topicCallback = cb;
+}
