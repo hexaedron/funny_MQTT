@@ -84,7 +84,7 @@ typedef struct
 	MQTTPacket_willOptions will;
 	MQTTString username;
 	MQTTString password;
-} MQTTPacket_connectData;
+} __attribute__ ((__packed__)) MQTTPacket_connectData;
 
 typedef union
 {

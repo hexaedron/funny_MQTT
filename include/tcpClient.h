@@ -22,6 +22,7 @@ public:
     void flushRecvBuf(void);
     bool disconnect(void);
     bool connect(void);
+    e_socketStatus getSocketStatus(void);
     tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort);
     ~tcpClient();
 };

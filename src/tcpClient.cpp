@@ -40,6 +40,7 @@ uint8_t* tcpClient::getRecvBuf(uint16_t* len)
 void tcpClient::flushRecvBuf(void)
 {
     this->retBuf.bufLen = 0;
+    this->ethInterface->socketBufIsRead(this->socket);
 }
 
 bool tcpClient::disconnect(void)
@@ -55,4 +56,9 @@ bool tcpClient::connect(void)
 char* tcpClient::getDnsName(void)
 {
     return this->ethInterface->getDnsName();
+}
+
+e_socketStatus tcpClient::getSocketStatus(void)
+{
+    return this->ethInterface->getSocketStatus(this->socket);
 }

@@ -25,7 +25,7 @@ public:
     MQTTClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort = 1883): tcpClient(eth, newDestIPAddress, newDestIPPort) {};
     //bool pushTopic(eMQTTTopicTypes type, const char* topic);
     //void setQOS(int newPubQOS, int newSubQOS);
-    void MQTTConnect(char *username, char *password);
+    void MQTTConnect(char *username = nullptr, char *password = nullptr);
     void MQTTSubscribe( char *topic, int req_qos);
     void MQTTUnsubscribe(char *topic);
     void MQTTPublish(char *topic, int qos, char *payload);

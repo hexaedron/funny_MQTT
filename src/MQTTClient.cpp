@@ -40,11 +40,16 @@ void MQTTClient::MQTTConnect(char *username, char *password)
     u32 len;
     u8 buf[200];
 
-    data.clientID.cstring = this->getDnsName();
+    data.clientID.lenstring.data = this->getDnsName();
+    data.clientID.lenstring.len = strlen(this->getDnsName());
     data.keepAliveInterval = 2000;
     data.cleansession = 1;
-    data.username.cstring = username;
-    data.password.cstring = password;
+
+    if((username != nullptr) && (password != nullptr))
+    {
+        data.username.cstring = username;
+        data.password.cstring = password;
+    }
 
     len = MQTTSerialize_connect(buf, sizeof(buf), &data);
     this->sendPacket(buf, len);

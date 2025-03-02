@@ -18,6 +18,23 @@ typedef enum
     unknown
 } e_phyStatus;
 
+typedef enum
+{
+    receivied,
+    connected,
+    disconnected,
+    timeout,
+    created,
+    wrongstatus
+} e_socketStatus;
+
+typedef struct 
+{
+    uint8_t socketID;
+    e_socketStatus status;
+} s_socket;
+
+
 class ethIF
 {
 private:
@@ -25,10 +42,10 @@ private:
     uint8_t* IPAddr;                    //IP address
     uint8_t* GWIPAddr;                  //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
-    uint16_t srcport = 1000;
+    uint16_t srcport = 55555;
     char dnsName[25] = "SMARTCUBE-";    //The DNS name we set by DHCP
 
-    uint8_t socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
+    s_socket socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
     sRetBuf* srvRetBuf;
     bool keepAlive = false;
@@ -41,6 +58,7 @@ private:
     void handleSockInt(u8 socketid, u8 intstat);
     void handleGlobalInt(void);
     void populateDNSName(void);
+    uint8_t getSocketNumByID(uint8_t sokcetid);
 
 public:
     void setSrvRetBuf(sRetBuf* newRetBuf);
@@ -57,9 +75,10 @@ public:
     bool isDHCPOK(void);
     char* getDnsName(void);
     e_phyStatus getPHYStatus(void);
+    e_socketStatus getSocketStatus(uint8_t socketid);
+    void socketBufIsRead(uint8_t socketid);
     bool isPHYOK(void);
     ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask); // Staic IP mode
-    // DCHP mode
-    ethIF(); 
+    ethIF(); // DCHP mode
     ~ethIF();
 };

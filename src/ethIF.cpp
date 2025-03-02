@@ -109,7 +109,11 @@ bool ethIF::init(void)
         WCHNET_ConfigKeepLive(&cfg);
     }
     
-    memset(socket, 0xff, WCHNET_MAX_SOCKET_NUM);
+    for(uint32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
+    {
+        socket[i].socketID = 0xff;
+        socket[i].status = e_socketStatus::created;
+    }
 
     if(this->IPAddr[0] == 0)
     {
@@ -257,7 +261,14 @@ void ethIF::handleSockInt(u8 socketid, u8 intstat)
     if (intstat & SINT_STAT_RECV)                                 //receive data
     {
         this->dataLoopback(socketid);                            //Data loopback
+        uint8_t sockNum = this->getSocketNumByID(socketid);
+        if(sockNum != 0xff)
+        {
+            socket[i].status = e_socketStatus::connected;
+        }
     }
+
+
     if (intstat & SINT_STAT_CONNECT)                              //connect successfully
     {
         if(this->keepAlive) 
@@ -267,33 +278,36 @@ void ethIF::handleSockInt(u8 socketid, u8 intstat)
 
         WCHNET_ModifyRecvBuf(socketid, (u32) SocketRecvBuf[socketid], RECE_BUF_LEN);
         for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {
-            if (socket[i] == 0xff) {                              //save connected socket id
-                socket[i] = socketid;
+            if (socket[i].socketID == 0xff) {                              //save connected socket id
+                socket[i].socketID = socketid;
+                socket[i].status = e_socketStatus::connected;
                 break;
             }
         }
-        //printf("TCP Connect Success\r\n");
-        //printf("socket id: %d\r\n",socket[i]);
     }
+
+
     if (intstat & SINT_STAT_DISCONNECT)                           //disconnect
     {
         for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {             //delete disconnected socket id
-            if (socket[i] == socketid) {
-                socket[i] = 0xff;
+            if (socket[i].socketID == socketid) {
+                socket[i].socketID = 0xff;
+                socket[i].status = e_socketStatus::disconnected;
                 break;
             }
         }
-        //printf("TCP Disconnect\r\n");
     }
+
+
     if (intstat & SINT_STAT_TIM_OUT)                              //timeout disconnect
     {
         for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {             //delete disconnected socket id
-            if (socket[i] == socketid) {
-                socket[i] = 0xff;
+            if (socket[i].socketID == socketid) {
+                socket[i].socketID = 0xff;
+                socket[i].status = e_socketStatus::timeout;
                 break;
             }
         }
-        //printf("TCP Timeout\r\n");
     }
 }
 
@@ -395,4 +409,39 @@ bool ethIF::isPHYOK(void)
 char* ethIF::getDnsName(void)
 {
     return this->dnsName;
+}
+
+e_socketStatus ethIF::getSocketStatus(uint8_t socketid)
+{
+    for(int32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
+    {
+        if(socket[i].socketID == socketid)
+        {
+            return socket[i].status;
+        }
+    }
+
+    return e_socketStatus::wrongstatus;
+}
+
+uint8_t ethIF::getSocketNumByID(uint8_t socketid)
+{
+    for(int8_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
+    {
+        if(socket[i].socketID == socketid)
+        {
+            return i;
+        }
+    }
+
+    return 0xff;
+}
+
+void ethIF::socketBufIsRead(uint8_t socketid)
+{
+    uint8_t sockNum = this->getSocketNumByID(socketid);
+    if(sockNum != 0xff)
+    {
+        socket[socketid].status = e_socketStatus::connected;
+    }
 }

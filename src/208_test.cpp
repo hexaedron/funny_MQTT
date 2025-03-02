@@ -15,10 +15,10 @@
 
 #include "GTimer.h"
 
-//static uint8_t IPAddr[4]    = {0,0,0,0};//{ 192, 168, 1, 43 };                   //IP address
+static uint8_t IPAddr[4]    = {0,0,0,0};//{ 192, 168, 1, 43 };                   //IP address
 static uint8_t destIPAddr[4]    = { 192, 168, 1, 253 };                   //IP address
-//static uint8_t GWIPAddr[4]  = {0,0,0,0};//{ 192, 168, 1, 1 };                    //Gateway IP address
-//static uint8_t IPMask[4]    = {0,0,0,0};//{ 255, 255, 255, 0 };                  //subnet mask
+static uint8_t GWIPAddr[4]  = {0,0,0,0};//{ 192, 168, 1, 1 };                    //Gateway IP address
+static uint8_t IPMask[4]    = {0,0,0,0};//{ 255, 255, 255, 0 };                  //subnet mask
 //uint16_t srcport = 1000; 
 #define PUB_TOPIC_COUNT 2
 #define SUB_TOPIC_COUNT 2
@@ -31,25 +31,32 @@ int main()
 
     //funGpioInitAll();
 
-   //ethIF myIF(IPAddr, GWIPAddr, IPMask);
+   ////ethIF myIF(IPAddr, GWIPAddr, IPMask);
    ethIF myIF;
    myIF.configKeepAlive();
    if(!myIF.init())
    {
         while (1){}  
    }
-
+   ///ethIF myIF(IPAddr, GWIPAddr, IPMask);
    //tcpServer myServer(&myIF, 1000);
    //MQTTClient<PUB_TOPIC_COUNT, SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr, 10000);
    MQTTClient myClient(&myIF, destIPAddr);
 
-    GTimer<millis32> myTimer(5000);
+    GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
     myTimer.keepPhase(true);
     myTimer.start();
 
-    char usrpwd[]="";
-    myClient.MQTTConnect(usrpwd, usrpwd);
+    //char usrpwd[]="ttt";
+    while (myClient.getSocketStatus() != e_socketStatus::connected)
+    {
+        /* wait */
+        myIF.mainTask();
+    }
+    
+    myClient.MQTTConnect();
+    //myClient.MQTTPublish((char*)"ch32topic/test/str", 0, (char*)"uptimeStr");
 
     char uptimeStr[128] = "ch32v208 uptime is  ";
 
