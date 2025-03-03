@@ -77,7 +77,10 @@ void MQTTClient::MQTTDisconnect(void)
 
 bool MQTTClient::isMQTTConnected(void)
 {
-    return (this->MQTTStatus == eMQTTStatus::MQTTConnected) || (this->MQTTStatus == eMQTTStatus::MQTTSuback);
+    return  (this->MQTTStatus == eMQTTStatus::MQTTConnected) || 
+            (this->MQTTStatus == eMQTTStatus::MQTTSuback)    ||
+            (this->MQTTStatus == eMQTTStatus::MQTTPublished);
+        
 }
 
 eMQTTStatus MQTTClient::getMQTTStatus(void)
@@ -139,6 +142,40 @@ void MQTTClient::mainTask(void)
         }
 
         this->flushRecvBuf();
+    }
+
+    switch (this->getSocketStatus())
+    {
+        case e_socketStatus::created:
+            this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+        break;
+
+        case e_socketStatus::disconnected:
+            this->connect();
+            this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+        break;
+
+        case e_socketStatus::timeout:
+            this->connect();
+            this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+        break;
+
+        case e_socketStatus::connected:
+            if(!this->isMQTTConnected()) 
+            {
+                this->MQTTConnect();
+            }
+            this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+        break;
+
+        case e_socketStatus::wrongstatus:
+            this->connect();
+            this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+        break;
+    
+        case e_socketStatus::receivied:
+            this->MQTTStatus = eMQTTStatus::MQTTConnected;
+        break;
     }
 }
 

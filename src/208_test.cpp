@@ -46,13 +46,13 @@ int main()
     myTimer.keepPhase(true);
     myTimer.start();
 
-    while (myClient.getSocketStatus() != e_socketStatus::connected)
-    {
-        /* wait */
-        myIF.mainTask();
-    }
+    //while (myClient.getSocketStatus() != e_socketStatus::connected)
+    //{
+    //    /* wait */
+    //    myIF.mainTask();
+    //}
     
-    myClient.MQTTConnect();
+    //myClient.MQTTConnect();
 
     char uptimeStr[128] = "ch32v208 uptime is  ";
 
@@ -61,6 +61,7 @@ int main()
         /*Ethernet library main task function,
          * which needs to be called cyclically*/
         myIF.mainTask();
+        myClient.mainTask();
 
         if(myTimer)
         {
