@@ -28,7 +28,6 @@ class MQTTClient : public tcpClient
 private:
     uint16_t MQTTPackedID = 5;
     eMQTTStatus MQTTStatus = eMQTTStatus::MQTTUnknown;
-    void parsePublishedTopic(uint8_t* buf, uint16_t len);
     MQTTString lastTopicName;
     uint8_t* lastTopicPayload;
     int lastTopicQos, lastTopicPayloadlen;
@@ -36,9 +35,26 @@ private:
     unsigned short lastTopicPacketID;
     f_topicCallback topicCallback = nullptr;
     uint32_t unknownTmr = 0;
-public:
-    MQTTClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort = 1883): tcpClient(eth, newDestIPAddress, newDestIPPort) {};
+    char* MQTTUsername = nullptr;
+    char* MQTTPassword = nullptr;
+
+    void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
+    
+public:
+    MQTTClient
+                (
+                    ethIF* eth, 
+                    uint8_t* newDestIPAddress, 
+                    uint16_t newDestIPPort = 1883, 
+                    char* username = nullptr, 
+                    char* password = nullptr
+                ): tcpClient(eth, newDestIPAddress, newDestIPPort) 
+    {
+        this->MQTTUsername = username;
+        this->MQTTPassword = password;
+    };
+
     void MQTTSubscribe( char *topic, int req_qos);
     void MQTTUnsubscribe(char *topic);
     void MQTTPublish(char *topic, int qos, char *payload);

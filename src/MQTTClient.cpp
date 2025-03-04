@@ -164,7 +164,7 @@ void MQTTClient::mainTask(void)
         case e_socketStatus::connected:
             if(!this->isMQTTConnected()) 
             {
-                this->MQTTConnect();
+                this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
                 this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
             }
         break;
@@ -182,7 +182,7 @@ void MQTTClient::mainTask(void)
     if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((millis32() - this->unknownTmr) > MQTT_UNKNOWN_MS_TIMEOUT) )
     {
         this->unknownTmr = millis32();
-        this->MQTTConnect();
+        this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
     }
 }
 
