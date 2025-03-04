@@ -12,6 +12,7 @@ enum eMQTTTopicTypes
 enum eMQTTStatus
 {
     MQTTConnected,
+    MQTTConnectRequested,
     MQTTPublished,
     MQTTSuback,
     MQTTUnknown

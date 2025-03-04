@@ -6,8 +6,7 @@ void MQTTClient::MQTTConnect(char *username, char *password)
     u32 len;
     u8 buf[200];
 
-    data.clientID.lenstring.data = this->getDnsName();
-    data.clientID.lenstring.len = strlen(this->getDnsName());
+    data.clientID.cstring = this->getDnsName();
     data.keepAliveInterval = 2000;
     data.cleansession = 1;
 
@@ -164,8 +163,8 @@ void MQTTClient::mainTask(void)
             if(!this->isMQTTConnected()) 
             {
                 this->MQTTConnect();
+                this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
             }
-            this->MQTTStatus = eMQTTStatus::MQTTUnknown;
         break;
 
         case e_socketStatus::wrongstatus:
