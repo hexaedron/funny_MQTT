@@ -1,8 +1,11 @@
 #pragma once
 
+#include "funny_time.h"
+
 #include "tcpClient.h"
 #include "MQTTPacket.h"
 
+#define MQTT_UNKNOWN_MS_TIMEOUT 5000
 
 enum eMQTTTopicTypes
 {
@@ -32,6 +35,7 @@ private:
     unsigned char lastTopicRetained, lastTopicDup;
     unsigned short lastTopicPacketID;
     f_topicCallback topicCallback = nullptr;
+    uint32_t unknownTmr = 0;
 public:
     MQTTClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort = 1883): tcpClient(eth, newDestIPAddress, newDestIPPort) {};
     void MQTTConnect(char *username = nullptr, char *password = nullptr);

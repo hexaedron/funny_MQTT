@@ -129,6 +129,7 @@ void MQTTClient::mainTask(void)
                                             this->lastTopicDup
                                         );
                 }
+                this->MQTTStatus = eMQTTStatus::MQTTConnected;
             break;
 
             case SUBACK:
@@ -137,6 +138,7 @@ void MQTTClient::mainTask(void)
         
             default:
                 this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+                this->unknownTmr = millis32();
             break;
         }
 
@@ -175,6 +177,12 @@ void MQTTClient::mainTask(void)
         case e_socketStatus::receivied:
             this->MQTTStatus = eMQTTStatus::MQTTConnected;
         break;
+    }
+
+    if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((millis32() - this->unknownTmr) > MQTT_UNKNOWN_MS_TIMEOUT) )
+    {
+        this->unknownTmr = millis32();
+        this->MQTTConnect();
     }
 }
 
