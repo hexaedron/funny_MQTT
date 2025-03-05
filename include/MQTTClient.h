@@ -34,13 +34,15 @@ private:
     unsigned char lastTopicRetained, lastTopicDup;
     unsigned short lastTopicPacketID;
     f_topicCallback topicCallback = nullptr;
-    uint32_t unknownTmr = 0;
+    uint32_t unknownTmr;
     char* MQTTUsername = nullptr;
     char* MQTTPassword = nullptr;
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
-    
+    void sendMQTTPacket(u8 *buf, u32 len);
+    bool isMQTTConnecRequested(void);
+
 public:
     MQTTClient
                 (
@@ -53,6 +55,7 @@ public:
     {
         this->MQTTUsername = username;
         this->MQTTPassword = password;
+        this->unknownTmr = millis32();
     };
 
     void MQTTSubscribe( char *topic, int req_qos);

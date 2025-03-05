@@ -82,6 +82,12 @@ bool MQTTClient::isMQTTConnected(void)
         
 }
 
+bool MQTTClient::isMQTTConnecRequested(void)
+{
+    return  (this->MQTTStatus == eMQTTStatus::MQTTConnectRequested);
+        
+}
+
 eMQTTStatus MQTTClient::getMQTTStatus(void)
 {
     return this->MQTTStatus;
@@ -162,7 +168,7 @@ void MQTTClient::mainTask(void)
         break;
 
         case e_socketStatus::connected:
-            if(!this->isMQTTConnected()) 
+            if((!this->isMQTTConnected()) && (!this->isMQTTConnecRequested()) ) 
             {
                 this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
                 this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
@@ -183,10 +189,19 @@ void MQTTClient::mainTask(void)
     {
         this->unknownTmr = millis32();
         this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
+        this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
     }
 }
 
 void MQTTClient::registerTopicCallback(f_topicCallback cb)
 {
     this->topicCallback = cb;
+}
+
+void MQTTClient::sendMQTTPacket(u8 *buf, u32 len)
+{
+    if(this->isMQTTConnected())
+    {
+        this->sendPacket(buf, len);
+    }
 }
