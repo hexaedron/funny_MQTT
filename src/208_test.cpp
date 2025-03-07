@@ -22,6 +22,15 @@ static uint8_t destIPAddr[4]    = { 192, 168, 1, 253 };                   //IP a
 //uint16_t srcport = 1000; 
 #define SUB_TOPIC_COUNT 2UL
 
+char receivedBuf[128] = "Received message: ";
+bool msgFlag = false;
+void topicCallback(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup )
+{
+    memcpy(topicPayload, receivedBuf + 7, payloadLen);
+    receivedBuf[payloadLen + 7] = '\0';
+    msgFlag = true;
+}
+
 int main()
 {  
     SystemInit120_HSE32();
@@ -42,6 +51,7 @@ int main()
 
     myClient.addSubTopic((char*)"ch32topic/test/cmd1");
     myClient.addSubTopic((char*)"ch32topic/test/cmd2");
+    myClient.registerTopicCallback(topicCallback);
 
     GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
@@ -69,6 +79,12 @@ int main()
             
             myClient.MQTTPublish((char*)"ch32topic/test/str", 0, uptimeStr);
 
+        }
+
+        if(msgFlag)
+        {
+            myClient.MQTTPublish((char*)"ch32topic/test/receivedstr", 0, receivedBuf);
+            msgFlag = false;
         }
 
     }
