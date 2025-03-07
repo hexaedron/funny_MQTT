@@ -38,7 +38,7 @@ int main()
         while (1){}  
    }
 
-   MQTTClient myClient(&myIF, destIPAddr);
+    MQTTClient<1UL> myClient(&myIF, destIPAddr);
 
     GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
