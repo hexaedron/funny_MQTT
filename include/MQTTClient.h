@@ -31,11 +31,14 @@ private:
     uint32_t unknownTmr;
     char* MQTTUsername = nullptr;
     char* MQTTPassword = nullptr;
+    MQTTString subTopics[subTopicCount] = {MQTTString_initializer};
+    int subQoSs[subTopicCount]          = {0};
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
     void sendMQTTPacket(u8 *buf, u32 len);
     bool isMQTTConnecRequested(void);
+    void MQTTSubscribe(void);
 
 public:
     MQTTClient
@@ -52,7 +55,6 @@ public:
         this->unknownTmr = millis32();
     };
 
-    void MQTTSubscribe( char *topic, int req_qos);
     void MQTTUnsubscribe(char *topic);
     void MQTTPublish(char *topic, int qos, char *payload);
     void MQTTPingreq(void);
@@ -61,6 +63,7 @@ public:
     eMQTTStatus getMQTTStatus(void);
     void registerTopicCallback(f_topicCallback cb);
     void mainTask(uint32_t unknownTimeout = 5000);
+    void addSubTopic(char* name, int qos = 0);
 };
 
 template <uint32_t subTopicCount>
@@ -85,15 +88,27 @@ void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
 }
 
 template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTSubscribe( char *topic, int req_qos)
+void MQTTClient<subTopicCount>::addSubTopic(char* topicName, int qos)
 {
-    MQTTString topicString = MQTTString_initializer;
+    static uint32_t i = 0;
+
+    if(i < subTopicCount)
+    {
+        this->subTopics[i].cstring = topicName;
+        this->subQoSs[i] = qos;
+    }
+
+    i++;
+}
+
+template <uint32_t subTopicCount>
+void MQTTClient<subTopicCount>::MQTTSubscribe(void)
+{
     u32 len;
     u32 msgid = 1;
-    u8 buf[200];
+    u8 buf[1024];
 
-    topicString.cstring = topic;
-    len = MQTTSerialize_subscribe(buf, sizeof(buf), 0, msgid, 1, &topicString, &req_qos);
+    len = MQTTSerialize_subscribe(buf, sizeof(buf), 0, msgid, subTopicCount, this->subTopics, this->subQoSs);
     this->sendPacket(buf, len);
 }
 
@@ -193,6 +208,7 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
         {
             case CONNACK:
                 this->MQTTStatus = eMQTTStatus::MQTTConnected;
+                this->MQTTSubscribe();
             break;
 
             case PUBLISH:
