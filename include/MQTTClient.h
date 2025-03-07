@@ -5,8 +5,6 @@
 #include "tcpClient.h"
 #include "MQTTPacket.h"
 
-#define MQTT_UNKNOWN_MS_TIMEOUT 5000
-
 enum eMQTTStatus
 {
     MQTTConnected,
@@ -62,7 +60,7 @@ public:
     bool isMQTTConnected(void);
     eMQTTStatus getMQTTStatus(void);
     void registerTopicCallback(f_topicCallback cb);
-    void mainTask(void);
+    void mainTask(uint32_t unknownTimeout = 5000);
 };
 
 template <uint32_t subTopicCount>
@@ -184,7 +182,7 @@ void MQTTClient<subTopicCount>::parsePublishedTopic(uint8_t* buf, uint16_t len)
 }
 
 template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::mainTask(void)
+void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
 {
     uint16_t len = 0;
     uint8_t* recvBuf = this->getRecvBuf(&len);
@@ -261,11 +259,19 @@ void MQTTClient<subTopicCount>::mainTask(void)
         break;
     }
 
-    if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((millis32() - this->unknownTmr) > MQTT_UNKNOWN_MS_TIMEOUT) )
+    uint32_t time = millis32();
+    if(time < this->unknownTmr )
     {
-        this->unknownTmr = millis32();
-        this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
-        this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
+        if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((time - this->unknownTmr) > unknownTimeout) )
+        {
+            this->unknownTmr = time;
+            this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
+            this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
+        }
+    }
+    else // millis32 rollup
+    {
+        this->unknownTmr = time;
     }
 }
 
