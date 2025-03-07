@@ -264,7 +264,7 @@ void ethIF::handleSockInt(u8 socketid, u8 intstat)
         uint8_t sockNum = this->getSocketNumByID(socketid);
         if(sockNum != 0xff)
         {
-            socket[i].status = e_socketStatus::connected;
+            socket[sockNum].status = e_socketStatus::connected;
         }
     }
 
