@@ -26,8 +26,8 @@ char receivedBuf[128] = "Received message: ";
 bool msgFlag = false;
 void topicCallback(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup )
 {
-    memcpy(topicPayload, receivedBuf + 7, payloadLen);
-    receivedBuf[payloadLen + 7] = '\0';
+    memcpy(topicPayload, receivedBuf + 17, payloadLen);
+    receivedBuf[payloadLen + 17] = '\0';
     msgFlag = true;
 }
 
