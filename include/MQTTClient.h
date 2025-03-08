@@ -20,23 +20,23 @@ template <uint32_t subTopicCount>
 class MQTTClient : public tcpClient
 {
 private:
-    uint16_t MQTTPackedID               = 5;
-    eMQTTStatus MQTTStatus              = eMQTTStatus::MQTTUnknown;
-    MQTTString lastTopicName;
-    uint8_t* lastTopicPayload;
-    int lastTopicQos, lastTopicPayloadlen;
-    unsigned char lastTopicRetained, lastTopicDup;
-    unsigned short lastTopicPacketID;
-    f_topicCallback topicCallback       = nullptr;
-    uint32_t unknownTmr;
-    char* MQTTUsername                  = nullptr;
-    char* MQTTPassword                  = nullptr;
-    MQTTString subTopics[subTopicCount] = {MQTTString_initializer};
-    int subQoSs[subTopicCount]          = {0};
-    unsigned short keepAlive;
-    char* willTopic                     = nullptr;
-    char* willMessage                   = nullptr;
-    int willQoS                         = 1;
+    uint16_t        MQTTPackedID             = 5;
+    eMQTTStatus     MQTTStatus               = eMQTTStatus::MQTTUnknown;
+    MQTTString      lastTopicName;
+    uint8_t*        lastTopicPayload;
+    int             lastTopicQos, lastTopicPayloadlen;
+    unsigned char   lastTopicRetained, lastTopicDup;
+    unsigned short  lastTopicPacketID;
+    f_topicCallback topicCallback            = nullptr;
+    uint32_t        unknownTmr, pingreqTmr, pingreqPrd;
+    char*           MQTTUsername             = nullptr;
+    char*           MQTTPassword             = nullptr;
+    MQTTString      subTopics[subTopicCount] = {MQTTString_initializer};
+    int             subQoSs[subTopicCount]   = {0};
+    unsigned short  keepAlive;
+    char*           willTopic                 = nullptr;
+    char*           willMessage               = nullptr;
+    int             willQoS                   = 1;
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
@@ -50,15 +50,18 @@ public:
                     ethIF* eth, 
                     uint8_t* newDestIPAddress, 
                     uint16_t newDestIPPort = 1883,
-                    unsigned int keepalive = 60, 
+                    unsigned int keepalive = 60,
                     char* username = nullptr, 
-                    char* password = nullptr
+                    char* password = nullptr,
+                    uint32_t setpingreqPrd = 3000 // Send pingreq every 3 seconds by default
                 ): tcpClient(eth, newDestIPAddress, newDestIPPort) 
     {
         this->MQTTUsername = username;
         this->MQTTPassword = password;
-        this->unknownTmr = millis32();
-        this->keepAlive = keepalive;
+        this->unknownTmr   = millis32();
+        this->pingreqTmr   = this->unknownTmr;
+        this->pingreqPrd   = setpingreqPrd;
+        this->keepAlive    = keepalive;
     };
 
     void MQTTUnsubscribe(char *topic);
@@ -234,6 +237,10 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
                 this->MQTTSubscribe();
             break;
 
+            case PINGRESP:
+                this->MQTTStatus = eMQTTStatus::MQTTConnected;
+            break;
+
             case PUBLISH:
                 this->MQTTStatus = eMQTTStatus::MQTTPublished;
                 this->parsePublishedTopic(recvBuf, len);
@@ -299,6 +306,8 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
     }
 
     uint32_t time = millis32();
+
+    // Check that it c;ient is no longer in MQTTUnknown for more than unknownTmr
     if(time < this->unknownTmr )
     {
         if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((time - this->unknownTmr) > unknownTimeout) )
@@ -311,6 +320,20 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
     else // millis32 rollup
     {
         this->unknownTmr = time;
+    }
+
+    // Send PINGREQ every pingreqPrd seconds
+    if(time < this->pingreqTmr )
+    {
+        if( (time - this->pingreqTmr) > this->pingreqPrd )
+        {
+            this->pingreqTmr = time;
+            this->MQTTPingreq();
+        }
+    }
+    else // millis32 rollup
+    {
+        this->pingreqTmr = time;
     }
 }
 
