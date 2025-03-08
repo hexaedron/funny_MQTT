@@ -24,6 +24,9 @@ static uint8_t destIPAddr[4]    = { 192, 168, 1, 253 };                   //IP a
 
 char receivedBuf[128] = "Received message: ";
 bool msgFlag = false;
+
+// This function is being called each time the MQTT client receives any topic.
+// So all the incoming topic handling should be done there.
 void topicCallback(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup )
 {
     memcpy(receivedBuf + 18, topicPayload, payloadLen);
@@ -36,8 +39,6 @@ int main()
     SystemInit120_HSE32();
 	
     system_initSystick();
-
-    //funGpioInitAll();
 
    ////ethIF myIF(IPAddr, GWIPAddr, IPMask);
    ethIF myIF;
@@ -64,10 +65,8 @@ int main()
 
     while(1)
     {
-        /*Ethernet library main task function,
-         * which needs to be called cyclically*/
-        myIF.mainTask();
-        myClient.mainTask();
+        myIF.mainTask();        // Ethernet library main task function, should be called cyclically
+        myClient.mainTask();    // The same for MQTT client main task
 
         if(myTimer)
         {

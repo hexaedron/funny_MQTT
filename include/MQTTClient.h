@@ -64,16 +64,16 @@ public:
         this->keepAlive    = keepalive;
     };
 
-    void MQTTUnsubscribe(char *topic);
-    void MQTTPublish(char *topic, int qos, char *payload);
-    void MQTTPingreq(void);
-    void MQTTDisconnect(void);
-    bool isMQTTConnected(void);
+    void        MQTTUnsubscribe(char *topic);
+    void        MQTTPublish(char *topic, int qos, char *payload);
+    void        MQTTPingreq(void);
+    void        MQTTDisconnect(void);
+    bool        isMQTTConnected(void);
     eMQTTStatus getMQTTStatus(void);
-    void registerTopicCallback(f_topicCallback cb);
-    void mainTask(uint32_t unknownTimeout = 5000);
-    void addSubTopic(char* name, int qos = 0);
-    void addWillTopic(char* name, char* message, int qos);
+    void        registerTopicCallback(f_topicCallback cb);
+    void        mainTask(uint32_t unknownTimeout = 5000); // Should be called in the main cycle
+    void        addSubTopic(char* name, int qos = 0);
+    void        addWillTopic(char* name, char* message, int qos);
 };
 
 template <uint32_t subTopicCount>
@@ -113,6 +113,8 @@ void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
     this->sendPacket(buf, len);
 }
 
+// Use this function to add subscritions one by one.
+// Don't add more than subTopicCount (i.e. template parameter) functions
 template <uint32_t subTopicCount>
 void MQTTClient<subTopicCount>::addSubTopic(char* topicName, int qos)
 {
@@ -222,12 +224,14 @@ void MQTTClient<subTopicCount>::parsePublishedTopic(uint8_t* buf, uint16_t len)
                             );
 }
 
+// MQTT client main task function, should be called cyclically
 template <uint32_t subTopicCount>
 void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
 {
     uint16_t len = 0;
     uint8_t* recvBuf = this->getRecvBuf(&len);
     
+    // Parse received data to determine further actions and set a correct client status
     if(len > 0)
     {
         switch (recvBuf[0] >> 4)
@@ -271,6 +275,7 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
         this->flushRecvBuf();
     }
 
+    // Check socket status to determine further actions and set a correct client status
     switch (this->getSocketStatus())
     {
         case e_socketStatus::created:
@@ -307,7 +312,7 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
 
     uint32_t time = millis32();
 
-    // Check that it c;ient is no longer in MQTTUnknown for more than unknownTmr
+    // Check that it client is no longer in MQTTUnknown for more than unknownTmr
     if(time < this->unknownTmr )
     {
         if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((time - this->unknownTmr) > unknownTimeout) )
@@ -337,6 +342,9 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
     }
 }
 
+// We set a callback funtion here. 
+// This function is being called each time the MQTT client receives any topic.
+// So all the incoming topic handling should be done inside that callback.
 template <uint32_t subTopicCount>
 void MQTTClient<subTopicCount>::registerTopicCallback(f_topicCallback cb)
 {
