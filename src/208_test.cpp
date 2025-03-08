@@ -26,7 +26,7 @@ char receivedBuf[128] = "Received message: ";
 bool msgFlag = false;
 void topicCallback(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup )
 {
-    memcpy(topicPayload, receivedBuf + 17, payloadLen);
+    memcpy(receivedBuf + 18, topicPayload, payloadLen);
     receivedBuf[payloadLen + 17] = '\0';
     msgFlag = true;
 }
@@ -50,7 +50,7 @@ int main()
     MQTTClient<SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr);
 
     myClient.addSubTopic((char*)"ch32topic/test/cmd1");
-    myClient.addSubTopic((char*)"ch32topic/test/cmd2");
+    myClient.addSubTopic((char*)"ch32topic/test1/cmd2");
     myClient.registerTopicCallback(topicCallback);
 
     GTimer<millis32> myTimer(3000);
