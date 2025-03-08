@@ -33,6 +33,9 @@ private:
     char* MQTTPassword = nullptr;
     MQTTString subTopics[subTopicCount] = {MQTTString_initializer};
     int subQoSs[subTopicCount]          = {0};
+    unsigned short keepAlive;
+    char* willTopic = nullptr;
+    char* willMessage = nullptr;
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
@@ -45,7 +48,8 @@ public:
                 (
                     ethIF* eth, 
                     uint8_t* newDestIPAddress, 
-                    uint16_t newDestIPPort = 1883, 
+                    uint16_t newDestIPPort = 1883,
+                    unsigned int keepalive = 60, 
                     char* username = nullptr, 
                     char* password = nullptr
                 ): tcpClient(eth, newDestIPAddress, newDestIPPort) 
@@ -53,6 +57,7 @@ public:
         this->MQTTUsername = username;
         this->MQTTPassword = password;
         this->unknownTmr = millis32();
+        this->keepAlive = keepalive;
     };
 
     void MQTTUnsubscribe(char *topic);
@@ -74,7 +79,7 @@ void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
     u8 buf[200];
 
     data.clientID.cstring = this->getDnsName();
-    data.keepAliveInterval = 2000;
+    data.keepAliveInterval = this->keepAlive;
     data.cleansession = 1;
 
     if((username != nullptr) && (password != nullptr))
@@ -145,7 +150,7 @@ void MQTTClient<subTopicCount>::MQTTPingreq(void)
     u32 len;
     u8 buf[10];
 
-    len = MQTTSerialize_pingreq(buf,sizeof(buf));
+    len = MQTTSerialize_pingreq(buf, sizeof(buf));
     this->sendPacket(buf, len);
 }
 
