@@ -41,7 +41,7 @@ private:
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
     void sendMQTTPacket(u8 *buf, u32 len);
-    bool isMQTTConnecRequested(void);
+    bool isMQTTConnectRequested(void);
     void MQTTSubscribe(void);
 
 public:
@@ -191,7 +191,7 @@ bool MQTTClient<subTopicCount>::isMQTTConnected(void)
 }
 
 template <uint32_t subTopicCount>
-bool MQTTClient<subTopicCount>::isMQTTConnecRequested(void)
+bool MQTTClient<subTopicCount>::isMQTTConnectRequested(void)
 {
     return  (this->MQTTStatus == eMQTTStatus::MQTTConnectRequested);
         
@@ -281,7 +281,7 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
         break;
 
         case e_socketStatus::connected:
-            if((!this->isMQTTConnected()) && (!this->isMQTTConnecRequested()) ) 
+            if((!this->isMQTTConnected()) && (!this->isMQTTConnectRequested()) ) 
             {
                 this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
                 this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
