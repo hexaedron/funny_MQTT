@@ -20,22 +20,23 @@ template <uint32_t subTopicCount>
 class MQTTClient : public tcpClient
 {
 private:
-    uint16_t MQTTPackedID = 5;
-    eMQTTStatus MQTTStatus = eMQTTStatus::MQTTUnknown;
+    uint16_t MQTTPackedID               = 5;
+    eMQTTStatus MQTTStatus              = eMQTTStatus::MQTTUnknown;
     MQTTString lastTopicName;
     uint8_t* lastTopicPayload;
     int lastTopicQos, lastTopicPayloadlen;
     unsigned char lastTopicRetained, lastTopicDup;
     unsigned short lastTopicPacketID;
-    f_topicCallback topicCallback = nullptr;
+    f_topicCallback topicCallback       = nullptr;
     uint32_t unknownTmr;
-    char* MQTTUsername = nullptr;
-    char* MQTTPassword = nullptr;
+    char* MQTTUsername                  = nullptr;
+    char* MQTTPassword                  = nullptr;
     MQTTString subTopics[subTopicCount] = {MQTTString_initializer};
     int subQoSs[subTopicCount]          = {0};
     unsigned short keepAlive;
-    char* willTopic = nullptr;
-    char* willMessage = nullptr;
+    char* willTopic                     = nullptr;
+    char* willMessage                   = nullptr;
+    int willQoS                         = 1;
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
@@ -69,7 +70,16 @@ public:
     void registerTopicCallback(f_topicCallback cb);
     void mainTask(uint32_t unknownTimeout = 5000);
     void addSubTopic(char* name, int qos = 0);
+    void addWillTopic(char* name, char* message, int qos);
 };
+
+template <uint32_t subTopicCount>
+void MQTTClient<subTopicCount>::addWillTopic(char* name, char* message, int qos)
+{
+    this->willMessage = message;
+    this->willQoS = qos;
+    this->willTopic = name;
+}
 
 template <uint32_t subTopicCount>
 void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
@@ -81,6 +91,14 @@ void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
     data.clientID.cstring = this->getDnsName();
     data.keepAliveInterval = this->keepAlive;
     data.cleansession = 1;
+
+    if((this->willMessage != nullptr) && (this->willTopic != nullptr))
+    {
+        data.willFlag = 1;
+        data.will.message.cstring = this->willMessage;
+        data.will.topicName.cstring = this->willTopic;
+        data.will.qos = this->willQoS;
+    } 
 
     if((username != nullptr) && (password != nullptr))
     {

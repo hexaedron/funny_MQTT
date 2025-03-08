@@ -53,6 +53,8 @@ int main()
     myClient.addSubTopic((char*)"ch32topic/test1/cmd2");
     myClient.registerTopicCallback(topicCallback);
 
+    myClient.addWillTopic((char*)"ch32topic/test/will", myIF.getDnsName(), 1);
+
     GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
     myTimer.keepPhase(true);
