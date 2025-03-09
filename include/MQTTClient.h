@@ -73,7 +73,7 @@ public:
     void        registerTopicCallback(f_topicCallback cb);
     void        mainTask(uint32_t unknownTimeout = 5000); // Should be called in the main cycle
     void        addSubTopic(char* name, int qos = 0);
-    void        addWillTopic(char* name, char* message, int qos);
+    void        addWillTopic(char* name, char* message, int qos = 1);
 };
 
 template <uint32_t subTopicCount>

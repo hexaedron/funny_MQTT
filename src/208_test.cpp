@@ -48,13 +48,13 @@ int main()
         while (1){}  
    }
 
-    MQTTClient<SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr);
+    MQTTClient<SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr, 1883, 10);
 
     myClient.addSubTopic((char*)"ch32topic/test/cmd1");
     myClient.addSubTopic((char*)"ch32topic/test1/cmd2");
     myClient.registerTopicCallback(topicCallback);
 
-    myClient.addWillTopic((char*)"ch32topic/test/will", myIF.getDnsName(), 1);
+    myClient.addWillTopic((char*)"ch32topic/test/will", myIF.getDnsName());
 
     GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
