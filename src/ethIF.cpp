@@ -41,19 +41,17 @@ ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask, uint16_t newSr
 
 void ethIF::populateDNSName(void)
 {
-    #define PREFIX_LEN 10
+    uint32_t prefixLen = strlen(this->dnsName);
 
-    const char symbols[17] = "0123456789ABCDEF";
+    const char symbolsLUT[17] = "0123456789ABCDEF";
     
     for (int i = 0; i < 6; i++) 
     {
         // Convert each byte to 2 hex symbols
-        this->dnsName[PREFIX_LEN + i*2] = symbols[MACAddr[i] >> 4];   // High nibble
-        this->dnsName[PREFIX_LEN + i*2 + 1] = symbols[MACAddr[i] & 0x0F]; // Low nibble
+        this->dnsName[prefixLen + i * 2]     = symbolsLUT[MACAddr[i] >> 4];   // High nibble
+        this->dnsName[prefixLen + i * 2 + 1] = symbolsLUT[MACAddr[i] & 0x0F]; // Low nibble
     }
-    this->dnsName[PREFIX_LEN + 12] = '\0';
-
-    #undef PREFIX_LEN
+    this->dnsName[prefixLen + 12] = '\0';
 }
 
 ethIF::ethIF(uint16_t newSrcPort)
