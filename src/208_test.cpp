@@ -6,9 +6,7 @@
 #include "simpleTimer.h"
 #include "SystemInit120_HSE32.h"
 
-//#include "ethIF.h"
-//#include "tcpServer.h"
-//#include "tcpClient.h"
+
 #include "MQTTClient.h"
 
 #include <cstdlib>
@@ -36,31 +34,41 @@ void topicCallback(char* topicName, uint8_t* topicPayload, int payloadLen, int t
 
 int main()
 {  
+    // Set up system clock to 120MHz, or else ethernet will refuse to work
     SystemInit120_HSE32();
 	
     system_initSystick();
 
-   ////ethIF myIF(IPAddr, GWIPAddr, IPMask);
-   ethIF myIF;
-   myIF.configKeepAlive();
-   if(!myIF.init())
-   {
-        while (1){}  
-   }
+    // Create an ethIF object. It is used by MQTT client
+    //ethIF myIF(IPAddr, GWIPAddr, IPMask);
+    ethIF myIF; // DHCP mode
+    myIF.configKeepAlive();
+    if(!myIF.init())
+    {
+         while (1){}  
+    }
 
+    // Create MQTTClient object. It is VERY IMPORTANT to set the template parameter 
+    // to be equal to exact number of topic filters we are going subscribe to
     MQTTClient<SUB_TOPIC_COUNT> myClient(&myIF, destIPAddr, 1883, 10);
 
+    // Subscribe to topics
     myClient.addSubTopic((char*)"ch32topic/test/cmd1");
-    myClient.addSubTopic((char*)"ch32topic/test1/cmd2");
+    myClient.addSubTopic((char*)"ch32topic/test_1/cmd2");
+
+    // Register the above topic callback function.
     myClient.registerTopicCallback(topicCallback);
 
+    // [OPTIONAL] Set the last will topic, its payload and QoS level
     myClient.addWillTopic((char*)"ch32topic/test/will", myIF.getDnsName());
 
+    // Init software timer based on millis32()
     GTimer<millis32> myTimer(3000);
     myTimer.setMode(GTMode::Interval);
     myTimer.keepPhase(true);
     myTimer.start();
 
+    // We will be publishing uptime message every 3 seconds
     char uptimeStr[128] = "ch32v208 uptime is  ";
 
     while(1)
@@ -70,20 +78,19 @@ int main()
 
         if(myTimer)
         {
+            // Construct a message
             char buf[14];
-
             itoa(millis32() / 1000, buf, 10);
-
             memcpy(uptimeStr + 19, buf, strlen(buf) + 1);
             strcat(uptimeStr, " seconds.");
-
             
+            // And publish it
             myClient.MQTTPublish((char*)"ch32topic/test/str", 0, uptimeStr);
-
         }
 
         if(msgFlag)
         {
+            // Here we publish back all the messages we got from topics we subscribed above
             myClient.MQTTPublish((char*)"ch32topic/test/receivedstr", 0, receivedBuf);
             msgFlag = false;
         }

@@ -8,7 +8,7 @@
 #define RCC_HPRE_DIV1                           ((uint32_t)0x00000000) /* SYSCLK not divided */
 #define RCC_HPRE_DIV2                           ((uint32_t)0x00000080) /* SYSCLK divided by 2 */
 #define RCC_HPRE_DIV4                           ((uint32_t)0x00000090) /* SYSCLK divided by 4 */
-#define HSE_STARTUP_TIMEOUT    ((uint16_t)0x1000) /* Time out for HSE start up */
+#define HSE_STARTUP_TIMEOUT                     ((uint16_t)0x1000) /* Time out for HSE start up */
 
 
 static void SetSysClockTo120_HSE(void)
