@@ -29,12 +29,13 @@ uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
     }
 }
 
-ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
+ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask, uint16_t newSrcPort)
 {
     WCHNET_GetMacAddr(this->MACAddr);
     this->IPAddr    = ipaddr;
     this->GWIPAddr  = gwipaddr;
     this->IPMask    = ipmask;
+    this->srcport   = newSrcPort;
     this->populateDNSName();
 }
 
@@ -55,13 +56,14 @@ void ethIF::populateDNSName(void)
     #undef PREFIX_LEN
 }
 
-ethIF::ethIF()
+ethIF::ethIF(uint16_t newSrcPort)
 {
     WCHNET_GetMacAddr(this->MACAddr);
 
-    this->IPAddr = l_IPAddr;
-    this->GWIPAddr = l_GWIPAddr;
-    this->IPMask = l_IPMask;
+    this->IPAddr    = l_IPAddr;
+    this->GWIPAddr  = l_GWIPAddr;
+    this->IPMask    = l_IPMask;
+    this->srcport   = newSrcPort;
 
     this->populateDNSName();
     WCHNET_DHCPSetHostname(this->dnsName);

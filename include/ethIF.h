@@ -42,7 +42,7 @@ private:
     uint8_t* IPAddr;                    //IP address
     uint8_t* GWIPAddr;                  //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
-    uint16_t srcport = 55555;
+    uint16_t srcport;
     char dnsName[25] = "SMARTCUBE-";    //The DNS name we set by DHCP
 
     s_socket         socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
@@ -78,7 +78,7 @@ public:
     e_socketStatus  getSocketStatus(uint8_t socketid);
     void            socketBufIsRead(uint8_t socketid);
     bool            isPHYOK(void);
-    ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask); // Staic IP mode
-    ethIF(); // DCHP mode
+    ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask, uint16_t newSrcPort = 55555); // Staic IP mode
+    ethIF(uint16_t newSrcPort = 55555); // DCHP mode
     ~ethIF();
 };
