@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "funny_time.h"
 
 #include "tcpClient.h"
@@ -13,6 +15,10 @@ enum eMQTTStatus
     MQTTSuback,
     MQTTUnknown
 };
+
+// Stubs (C++20)
+struct emptyMQTTArray {[[no_unique_address]] int unused;};
+struct emptyQoSArray  {[[no_unique_address]] int unused;};
 
 typedef void (*f_topicCallback)(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup ); 
 
@@ -31,8 +37,25 @@ private:
     uint32_t        unknownTmr, pingreqTmr, pingreqPrd;
     char*           MQTTUsername             = nullptr;
     char*           MQTTPassword             = nullptr;
-    MQTTString      subTopics[subTopicCount] = {MQTTString_initializer};
-    int             subQoSs[subTopicCount]   = {0};
+
+    // We choose a type here: array or stub
+    using topicsStorage = std::conditional_t
+    <
+        (subTopicCount > 0),
+        MQTTString[subTopicCount],  // true → array
+        emptyMQTTArray              // false → stub
+    >;
+    topicsStorage subTopics;
+
+    // The same for QoS
+    using QoSStorage = std::conditional_t
+    <
+        (subTopicCount > 0),
+        int[subTopicCount],  // true → array
+        emptyQoSArray        // false → array
+    >;
+    QoSStorage subQoSs;
+
     unsigned short  keepAlive;
     char*           willTopic                 = nullptr;
     char*           willMessage               = nullptr;
@@ -62,6 +85,14 @@ public:
         this->pingreqTmr   = this->unknownTmr;
         this->pingreqPrd   = setpingreqPrd;
         this->keepAlive    = keepalive;
+        if constexpr (subTopicCount > 0)
+        {
+            for(uint32_t i = 0; i < subTopicCount; i++)
+            {
+                this->subTopics[i] = MQTTString_initializer;
+                this->subQoSs[i] = 0;
+            }
+        }
     };
 
     void        MQTTUnsubscribe(char *topic);
@@ -120,13 +151,16 @@ void MQTTClient<subTopicCount>::addSubTopic(char* topicName, int qos)
 {
     static uint32_t i = 0;
 
-    if(i < subTopicCount)
+    if constexpr (subTopicCount > 0)
     {
-        this->subTopics[i].cstring = topicName;
-        this->subQoSs[i] = qos;
-    }
+        if(i < subTopicCount)
+        {
+            this->subTopics[i].cstring = topicName;
+            this->subQoSs[i] = qos;
+        }
 
-    i++;
+        i++;
+    }
 }
 
 template <uint32_t subTopicCount>
@@ -136,8 +170,11 @@ void MQTTClient<subTopicCount>::MQTTSubscribe(void)
     u32 msgid = 1;
     u8 buf[1024];
 
-    len = MQTTSerialize_subscribe(buf, sizeof(buf), 0, msgid, subTopicCount, this->subTopics, this->subQoSs);
-    this->sendPacket(buf, len);
+    if constexpr (subTopicCount > 0)
+    {
+        len = MQTTSerialize_subscribe(buf, sizeof(buf), 0, msgid, subTopicCount, this->subTopics, this->subQoSs);
+        this->sendPacket(buf, len);
+    }
 }
 
 template <uint32_t subTopicCount>
