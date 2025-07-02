@@ -17,8 +17,8 @@ enum eMQTTStatus
 };
 
 // Stubs (C++20)
-struct emptyMQTTArray {[[no_unique_address]] int unused;};
-struct emptyQoSArray  {[[no_unique_address]] int unused;};
+struct emptyMQTTArray {};
+struct emptyQoSArray  {};
 
 typedef void (*f_topicCallback)(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup ); 
 
@@ -45,7 +45,7 @@ private:
         MQTTString[subTopicCount],  // true → array
         emptyMQTTArray              // false → stub
     >;
-    topicsStorage subTopics;
+    [[no_unique_address]] topicsStorage subTopics;
 
     // The same for QoS
     using QoSStorage = std::conditional_t
@@ -54,7 +54,7 @@ private:
         int[subTopicCount],  // true → array
         emptyQoSArray        // false → array
     >;
-    QoSStorage subQoSs;
+    [[no_unique_address]] QoSStorage subQoSs;
 
     unsigned short  keepAlive;
     char*           willTopic                 = nullptr;
