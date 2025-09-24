@@ -44,7 +44,7 @@ static void SetSysClockTo120_HSE(void)
         RCC->CFGR0 |= (uint32_t)RCC_HPRE_DIV1;
 #endif
         /* PCLK2 = HCLK */
-        RCC->CFGR0 |= (uint32_t)RCC_PPRE2_DIV1;
+        RCC->CFGR0 |= (uint32_t)RCC_PPRE2_DIV2; /* To make ADC clock run @10MHz*/
         /* PCLK1 = HCLK */
         RCC->CFGR0 |= (uint32_t)RCC_PPRE1_DIV2;
 
@@ -55,7 +55,7 @@ static void SetSysClockTo120_HSE(void)
         RCC->CFGR0 &= (uint32_t)((uint32_t) ~(RCC_PLLSRC | RCC_PLLXTPRE |
                                               RCC_PLLMULL));
 
-        RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSE | RCC_PLLXTPRE_HSE | RCC_PLLMULL15);
+        RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSE | RCC_PLLXTPRE_HSE | RCC_PLLMULL15 | RCC_ADCPRE_DIV6 /* To make ADC clock run @10MHz*/);
 
         /* Enable PLL */
         RCC->CTLR |= RCC_PLLON;
