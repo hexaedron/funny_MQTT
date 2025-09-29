@@ -43,7 +43,7 @@ void ethIF::populateDNSName(void)
 {
     uint32_t prefixLen = strlen(this->dnsName);
 
-    const char symbolsLUT[17] = "0123456789ABCDEF";
+    const char symbolsLUT[17] = "0123456789abcdef";
     
     for (int i = 0; i < 6; i++) 
     {

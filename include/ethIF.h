@@ -43,7 +43,7 @@ private:
     uint8_t* GWIPAddr;                  //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
     uint16_t srcport;
-    char dnsName[25] = "SMARTCUBE-";    //The DNS name we set by DHCP
+    char dnsName[25] = "smartcube-";    //The DNS name we set by DHCP
 
     s_socket         socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t          SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer

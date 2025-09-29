@@ -96,7 +96,7 @@ public:
     };
 
     void        MQTTUnsubscribe(char *topic);
-    void        MQTTPublish(char *topic, int qos, char *payload);
+    void        MQTTPublish(char *topic, int qos, char *payload, bool retained = false);
     void        MQTTPingreq(void);
     void        MQTTDisconnect(void);
     bool        isMQTTConnected(void);
@@ -191,7 +191,7 @@ void MQTTClient<subTopicCount>::MQTTUnsubscribe(char *topic)
 }
 
 template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTPublish(char *topic, int qos, char *payload)
+void MQTTClient<subTopicCount>::MQTTPublish(char *topic, int qos, char *payload, bool retained)
 {
     MQTTString topicString = MQTTString_initializer;
     u32 payloadlen;
@@ -200,7 +200,7 @@ void MQTTClient<subTopicCount>::MQTTPublish(char *topic, int qos, char *payload)
 
     topicString.cstring = topic;
     payloadlen = strlen(payload);
-    len = MQTTSerialize_publish(buf, sizeof(buf), 0, qos, 0, this->MQTTPackedID++, topicString, (unsigned char*)payload, payloadlen);
+    len = MQTTSerialize_publish(buf, sizeof(buf), 0, qos, retained, this->MQTTPackedID++, topicString, (unsigned char*)payload, payloadlen);
     this->sendPacket(buf, len);
 }
 
