@@ -18,6 +18,7 @@ public:
     void           setDestIP(uint8_t* newDestIPAddress);
     void           sendPacket(u8 *buf, u32 len);
     char*          getDnsName(void);
+    uint8_t*       getipAddr(void) { return this->ethInterface->getIPAddr(); }
     uint8_t*       getRecvBuf(uint16_t* len);  // Get the data we received from our socket
     void           flushRecvBuf(void);
     bool           disconnect(void);

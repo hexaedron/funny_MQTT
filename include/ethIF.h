@@ -74,6 +74,7 @@ public:
     void            sendPacket(uint8_t socket, u8 *buf, u32 len); // Send a packet to a specific socket
     bool            isDHCPOK(void);
     char*           getDnsName(void);
+    uint8_t*         getIPAddr(void) { return this->IPAddr; }
     e_phyStatus     getPHYStatus(void);
     e_socketStatus  getSocketStatus(uint8_t socketid);
     void            socketBufIsRead(uint8_t socketid);
