@@ -13,6 +13,8 @@ enum eMQTTStatus
     MQTTConnectRequested,
     MQTTPublished,
     MQTTSuback,
+    MQTTPuback,
+    MQTTUnsuback,
     MQTTUnknown
 };
 
@@ -226,10 +228,7 @@ void MQTTClient<subTopicCount>::MQTTDisconnect(void)
 template <uint32_t subTopicCount>
 bool MQTTClient<subTopicCount>::isMQTTConnected(void)
 {
-    return  (this->MQTTStatus == eMQTTStatus::MQTTConnected) || 
-            (this->MQTTStatus == eMQTTStatus::MQTTSuback)    ||
-            (this->MQTTStatus == eMQTTStatus::MQTTPublished);
-        
+    return  this->MQTTStatus != eMQTTStatus::MQTTUnknown;      
 }
 
 template <uint32_t subTopicCount>
@@ -302,6 +301,22 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
             case SUBACK:
                 this->MQTTStatus = eMQTTStatus::MQTTSuback;
             break;
+
+            case PUBREC:
+            case PUBREL:
+            case PUBCOMP:
+            case PUBACK:
+                this->MQTTStatus = eMQTTStatus::MQTTPuback;
+            break;
+
+            case UNSUBACK:
+                this->MQTTStatus = eMQTTStatus::MQTTUnsuback;
+            break;
+
+            case DISCONNECT:
+                this->MQTTStatus = eMQTTStatus::MQTTUnknown;
+                this->unknownTmr = millis32();
+            break;
         
             default:
                 this->MQTTStatus = eMQTTStatus::MQTTUnknown;
@@ -330,7 +345,7 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
         break;
 
         case e_socketStatus::connected:
-            if((!this->isMQTTConnected()) && (!this->isMQTTConnectRequested()) ) 
+            if( !(this->isMQTTConnected() || this->isMQTTConnectRequested()) ) 
             {
                 this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
                 this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
