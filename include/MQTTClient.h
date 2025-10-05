@@ -314,10 +314,6 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
             break;
 
             case DISCONNECT:
-                this->MQTTStatus = eMQTTStatus::MQTTUnknown;
-                this->unknownTmr = millis32();
-            break;
-        
             default:
                 this->MQTTStatus = eMQTTStatus::MQTTUnknown;
                 this->unknownTmr = millis32();
