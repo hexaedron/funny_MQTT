@@ -364,33 +364,30 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
 
     uint32_t time = millis32();
 
-    // Check that it client is no longer in MQTTUnknown for more than unknownTmr
+    // fix millis32 rollup
     if(time < this->unknownTmr )
-    {
-        if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((time - this->unknownTmr) > unknownTimeout) )
-        {
-            this->unknownTmr = time;
-            this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
-            this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
-        }
-    }
-    else // millis32 rollup
     {
         this->unknownTmr = time;
     }
+    // Check that it client is no longer in MQTTUnknown for more than unknownTmr
+    if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((time - this->unknownTmr) > unknownTimeout) )
+    {
+        this->unknownTmr = time;
+        this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
+        this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
+    }
 
-    // Send PINGREQ every pingreqPrd seconds
+    
+    // fix millis32 rollup
     if(time < this->pingreqTmr )
     {
-        if( (time - this->pingreqTmr) > this->pingreqPrd )
-        {
-            this->pingreqTmr = time;
-            this->MQTTPingreq();
-        }
+        this->pingreqTmr = time;
     }
-    else // millis32 rollup
+    // Send PINGREQ every pingreqPrd seconds
+    if( (time - this->pingreqTmr) > this->pingreqPrd )
     {
         this->pingreqTmr = time;
+        this->MQTTPingreq();
     }
 }
 
