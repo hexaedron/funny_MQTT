@@ -14,6 +14,9 @@ enum eMQTTStatus
     MQTTPublished,
     MQTTSuback,
     MQTTPuback,
+    MQTTTPubrec,
+    MQTTTPubrel,
+    MQTTTPubcomp,
     MQTTUnsuback,
     MQTTUnknown
 };
@@ -284,6 +287,23 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
             case PUBLISH:
                 this->MQTTStatus = eMQTTStatus::MQTTPublished;
                 this->parsePublishedTopic(recvBuf, len);
+
+                if(this->lastTopicQos == 1)
+                {
+                    // Send PUBACK
+                    u32 plen;
+                    u8 pbuf[20];
+                    plen = MQTTSerialize_puback(pbuf, sizeof(pbuf), this->lastTopicPacketID);
+                    this->sendPacket(pbuf, plen);
+                }
+                else if(this->lastTopicQos == 2)
+                {
+                    // Send PUBREC
+                    u32 plen;
+                    u8 pbuf[20];
+                    plen = MQTTSerialize_pubrec(pbuf, sizeof(pbuf), this->lastTopicPacketID);
+                    this->sendPacket(pbuf, plen);
+                }
                 if(this->topicCallback != nullptr)
                 {
                     this->topicCallback(
@@ -303,8 +323,24 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
             break;
 
             case PUBREC:
+                this->MQTTStatus = eMQTTStatus::MQTTTPubrec;
+            break;
+
             case PUBREL:
+                this->MQTTStatus = eMQTTStatus::MQTTTPubrel;
+                u32 plen;
+                u8 pbuf[20];
+                unsigned char packetType, paketDup;
+                unsigned short packetID;
+                plen = MQTTDeserialize_ack(&packetType, &paketDup, &packetID, recvBuf, len);
+                plen = MQTTSerialize_pubcomp(pbuf, sizeof(pbuf), this->lastTopicPacketID);
+                this->sendPacket(pbuf, plen);
+            break;
+
             case PUBCOMP:
+                this->MQTTStatus = eMQTTStatus::MQTTTPubcomp;
+            break;
+
             case PUBACK:
                 this->MQTTStatus = eMQTTStatus::MQTTPuback;
             break;
