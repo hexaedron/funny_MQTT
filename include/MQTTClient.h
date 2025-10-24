@@ -24,6 +24,8 @@ enum eMQTTStatus
 // Stubs (C++20)
 struct emptyMQTTArray {};
 struct emptyQoSArray  {};
+struct emptyCharArray {};
+
 
 typedef void (*f_topicCallback)(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup ); 
 
@@ -61,10 +63,19 @@ private:
     >;
     [[no_unique_address]] QoSStorage subQoSs;
 
+    // The same for topic strings
+    using CharStorage = std::conditional_t
+    <
+        (subTopicCount > 0),
+        char[subTopicCount][70],  // true → array
+        emptyCharArray            // false → array
+    >;
+    [[no_unique_address]] CharStorage topicStorage;
+
     unsigned short  keepAlive;
-    char*           willTopic                 = nullptr;
-    char*           willMessage               = nullptr;
-    int             willQoS                   = 1;
+    char            willTopic[70]{0};
+    char            willMessage[10]{0};
+    int             willQoS{1};
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
     void MQTTConnect(char *username = nullptr, char *password = nullptr);
@@ -115,9 +126,9 @@ public:
 template <uint32_t subTopicCount>
 void MQTTClient<subTopicCount>::addWillTopic(char* name, char* message, int qos)
 {
-    this->willMessage = message;
+    strcpy(this->willMessage, message);
     this->willQoS = qos;
-    this->willTopic = name;
+    strcpy(this->willTopic, name);
 }
 
 template <uint32_t subTopicCount>
@@ -131,7 +142,7 @@ void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
     data.keepAliveInterval = this->keepAlive;
     data.cleansession = 1;
 
-    if((this->willMessage != nullptr) && (this->willTopic != nullptr))
+    if((this->willMessage[0] != 0) && (this->willTopic[0] != 0))
     {
         data.willFlag = 1;
         data.will.message.cstring = this->willMessage;
@@ -160,7 +171,8 @@ void MQTTClient<subTopicCount>::addSubTopic(char* topicName, int qos)
     {
         if(i < subTopicCount)
         {
-            this->subTopics[i].cstring = topicName;
+            strcpy(this->topicStorage[i], topicName);
+            this->subTopics[i].cstring = topicStorage[i];
             this->subQoSs[i] = qos;
         }
 
@@ -304,10 +316,13 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
                     plen = MQTTSerialize_pubrec(pbuf, sizeof(pbuf), this->lastTopicPacketID);
                     this->sendPacket(pbuf, plen);
                 }
+                
                 if(this->topicCallback != nullptr)
                 {
+                    char buf[70]{'\0'};
+                    memcpy(buf, this->lastTopicName.lenstring.data, this->lastTopicName.lenstring.len);
                     this->topicCallback(
-                                            this->lastTopicName.cstring, 
+                                            buf, 
                                             this->lastTopicPayload, 
                                             this->lastTopicPayloadlen, 
                                             this->lastTopicQos, 
