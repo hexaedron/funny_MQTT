@@ -29,7 +29,14 @@ struct emptyCharArray {};
 
 typedef void (*f_topicCallback)(char* topicName, uint8_t* topicPayload, int payloadLen, int topicQos, unsigned char retained, unsigned char dup ); 
 
-template <uint32_t subTopicCount>
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength       = 70, 
+    size_t subTopicPayloadLength    = 128,
+    size_t willTopicNameLength      = 70,
+    size_t willTopicPayloadLength   = 20
+>
 class MQTTClient : public tcpClient
 {
 private:
@@ -67,14 +74,14 @@ private:
     using CharStorage = std::conditional_t
     <
         (subTopicCount > 0),
-        char[subTopicCount][70],  // true → array
-        emptyCharArray            // false → array
+        char[subTopicCount][subTopicNameLength],  // true → array
+        emptyCharArray                            // false → array
     >;
     [[no_unique_address]] CharStorage topicStorage;
 
     unsigned short  keepAlive;
-    char            willTopic[70]{0};
-    char            willMessage[10]{0};
+    char            willTopic[willTopicNameLength]{0};
+    char            willMessage[willTopicPayloadLength]{0};
     int             willQoS{1};
 
     void parsePublishedTopic(uint8_t* buf, uint16_t len);
@@ -123,16 +130,44 @@ public:
     void        addWillTopic(char* name, char* message, int qos = 1);
 };
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::addWillTopic(char* name, char* message, int qos)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::addWillTopic(char* name, char* message, int qos)
 {
     strcpy(this->willMessage, message);
     this->willQoS = qos;
     strcpy(this->willTopic, name);
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::MQTTConnect(char *username, char *password)
 {
     MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
     u32 len;
@@ -162,8 +197,22 @@ void MQTTClient<subTopicCount>::MQTTConnect(char *username, char *password)
 
 // Use this function to add subscritions one by one.
 // Don't add more than subTopicCount (i.e. template parameter) functions
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::addSubTopic(char* topicName, int qos)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::addSubTopic(char* topicName, int qos)
 {
     static uint32_t i = 0;
 
@@ -180,8 +229,22 @@ void MQTTClient<subTopicCount>::addSubTopic(char* topicName, int qos)
     }
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTSubscribe(void)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::MQTTSubscribe(void)
 {
     u32 len;
     u32 msgid = 1;
@@ -194,8 +257,22 @@ void MQTTClient<subTopicCount>::MQTTSubscribe(void)
     }
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTUnsubscribe(char *topic)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::MQTTUnsubscribe(char *topic)
 {
     MQTTString topicString = MQTTString_initializer;
     u32 len;
@@ -207,8 +284,22 @@ void MQTTClient<subTopicCount>::MQTTUnsubscribe(char *topic)
     this->sendPacket(buf, len);
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTPublish(char *topic, int qos, char *payload, bool retained)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::MQTTPublish(char *topic, int qos, char *payload, bool retained)
 {
     MQTTString topicString = MQTTString_initializer;
     u32 payloadlen;
@@ -221,8 +312,22 @@ void MQTTClient<subTopicCount>::MQTTPublish(char *topic, int qos, char *payload,
     this->sendPacket(buf, len);
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTPingreq(void)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::MQTTPingreq(void)
 {
     u32 len;
     u8 buf[10];
@@ -231,8 +336,22 @@ void MQTTClient<subTopicCount>::MQTTPingreq(void)
     this->sendPacket(buf, len);
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::MQTTDisconnect(void)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::MQTTDisconnect(void)
 {
     u32 len;
     u8 buf[50];
@@ -240,27 +359,83 @@ void MQTTClient<subTopicCount>::MQTTDisconnect(void)
     this->sendPacket(buf, len);
 }
 
-template <uint32_t subTopicCount>
-bool MQTTClient<subTopicCount>::isMQTTConnected(void)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+bool MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::isMQTTConnected(void)
 {
     return  this->MQTTStatus != eMQTTStatus::MQTTUnknown;      
 }
 
-template <uint32_t subTopicCount>
-bool MQTTClient<subTopicCount>::isMQTTConnectRequested(void)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+bool MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::isMQTTConnectRequested(void)
 {
     return  (this->MQTTStatus == eMQTTStatus::MQTTConnectRequested);
         
 }
 
-template <uint32_t subTopicCount>
-eMQTTStatus MQTTClient<subTopicCount>::getMQTTStatus(void)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+eMQTTStatus MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::getMQTTStatus(void)
 {
     return this->MQTTStatus;
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::parsePublishedTopic(uint8_t* buf, uint16_t len)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::parsePublishedTopic(uint8_t* buf, uint16_t len)
 {
     MQTTDeserialize_publish(
                                 &this->lastTopicDup,
@@ -276,8 +451,22 @@ void MQTTClient<subTopicCount>::parsePublishedTopic(uint8_t* buf, uint16_t len)
 }
 
 // MQTT client main task function, should be called cyclically
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::mainTask(uint32_t unknownTimeout)
 {
     uint16_t len = 0;
     uint8_t* recvBuf = this->getRecvBuf(&len);
@@ -316,10 +505,10 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
                     plen = MQTTSerialize_pubrec(pbuf, sizeof(pbuf), this->lastTopicPacketID);
                     this->sendPacket(pbuf, plen);
                 }
-                
+
                 if(this->topicCallback != nullptr)
                 {
-                    char buf[70]{'\0'};
+                    char buf[subTopicNameLength]{'\0'};
                     memcpy(buf, this->lastTopicName.lenstring.data, this->lastTopicName.lenstring.len);
                     this->topicCallback(
                                             buf, 
@@ -441,14 +630,42 @@ void MQTTClient<subTopicCount>::mainTask(uint32_t unknownTimeout)
 // We set a callback funtion here. 
 // This function is being called each time the MQTT client receives any topic.
 // So all the incoming topic handling should be done inside that callback.
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::registerTopicCallback(f_topicCallback cb)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::registerTopicCallback(f_topicCallback cb)
 {
     this->topicCallback = cb;
 }
 
-template <uint32_t subTopicCount>
-void MQTTClient<subTopicCount>::sendMQTTPacket(u8 *buf, u32 len)
+template 
+<
+    uint32_t subTopicCount, 
+    size_t subTopicNameLength, 
+    size_t subTopicPayloadLength,
+    size_t willTopicNameLength,
+    size_t willTopicPayloadLength
+>
+void MQTTClient
+<
+    subTopicCount, 
+    subTopicNameLength, 
+    subTopicPayloadLength, 
+    willTopicNameLength, 
+    willTopicPayloadLength
+>::sendMQTTPacket(u8 *buf, u32 len)
 {
     if(this->isMQTTConnected())
     {
