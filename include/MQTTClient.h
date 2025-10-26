@@ -376,7 +376,7 @@ bool MQTTClient
     willTopicPayloadLength
 >::isMQTTConnected(void)
 {
-    return  this->MQTTStatus != eMQTTStatus::MQTTUnknown;      
+    return  (this->MQTTStatus != eMQTTStatus::MQTTUnknown) && (this->MQTTStatus != eMQTTStatus::MQTTConnectRequested);      
 }
 
 template 
