@@ -17,6 +17,6 @@ public:
     void sendPacket(u8 *buf, u32 len); 
     uint8_t* getRecvBuf(uint16_t* len); // Get the data we received from our socket
     void flushRecvBuf(void);
-    tcpServer(ethIF* eth, uint16_t IPPort);
+    tcpServer(ethIF* eth, uint16_t IPPort, uint8_t socket = UINT8_MAX);
     ~tcpServer();
 };
