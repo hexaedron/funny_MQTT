@@ -1,10 +1,9 @@
 #include "tcpServer.h"
 
-tcpServer::tcpServer(ethIF* eth, uint16_t ipport, uint8_t socket)
+tcpServer::tcpServer(ethIF* eth, uint16_t ipport)
 {
     this->ethInterface = eth;
     this->srcport   = ipport;
-    this->socket    = socket;
     this->ethInterface->setSrvRetBuf(&this->retBuf);
     this->ethInterface->createTcpSocketListen(&this->socket, ipport);
 }

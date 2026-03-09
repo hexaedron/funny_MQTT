@@ -1,11 +1,10 @@
 #include "tcpClient.h"
 
-tcpClient::tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort, uint8_t socket)
+tcpClient::tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort)
 {
     this->ethInterface = eth;
     this->destIPAddress = newDestIPAddress;
     this->destIPPort = newDestIPPort;
-    this->socket = socket;
     this->ethInterface->setSrvRetBuf(&this->retBuf);
     this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort);
 }

@@ -24,6 +24,6 @@ public:
     bool           disconnect(void);
     bool           connect(void);
     e_socketStatus getSocketStatus(void);
-    tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort, uint8_t socket = UINT8_MAX);
+    tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort);
     ~tcpClient();
 };

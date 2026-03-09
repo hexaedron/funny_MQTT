@@ -99,9 +99,8 @@ public:
                     unsigned int keepalive = 60,
                     char* username = nullptr, 
                     char* password = nullptr,
-                    uint32_t setpingreqPrd = 3000, // Send pingreq every 3 seconds by default
-                    int8_t socketID = 0
-                ): tcpClient(eth, newDestIPAddress, newDestIPPort, socketID) 
+                    uint32_t setpingreqPrd = 3000 // Send pingreq every 3 seconds by default
+                ): tcpClient(eth, newDestIPAddress, newDestIPPort) 
     {
         this->MQTTUsername = username;
         this->MQTTPassword = password;

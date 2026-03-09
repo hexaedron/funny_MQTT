@@ -58,7 +58,7 @@ private:
     void    handleSockInt(u8 socketid, u8 intstat);
     void    handleGlobalInt(void);
     void    populateDNSName(void);
-    uint8_t getSocketNumByID(uint8_t sokcetid);
+    uint8_t getSocketNumByID(uint8_t socketid);
 
 public:
     void            setSrvRetBuf(sRetBuf* newRetBuf);
