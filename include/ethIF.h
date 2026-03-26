@@ -4,12 +4,6 @@
 #include <cstring>
 #include "eth_driver.h"
 
-typedef struct
-{
-    uint8_t retBuf[RECE_BUF_LEN];
-    uint16_t bufLen = 0;
-} sRetBuf;
-
 typedef enum
 {
     unreach,
@@ -42,12 +36,11 @@ private:
     uint8_t* IPAddr;                    //IP address
     uint8_t* GWIPAddr;                  //Gateway IP address
     uint8_t* IPMask;                    //subnet mask
-    uint16_t srcport;
     char dnsName[25] = "smartcube-";    //The DNS name we set by DHCP
 
     s_socket         socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
     uint8_t          SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
-    sRetBuf*         srvRetBuf;
+    int16_t          retBufLen[WCHNET_MAX_SOCKET_NUM];                 //Received data length for each socket
     bool             keepAlive = false;
     struct _KEEP_CFG cfg;
     e_phyStatus      phyStatus = e_phyStatus::unknown;
@@ -61,12 +54,11 @@ private:
     uint8_t getSocketNumByID(uint8_t socketid);
 
 public:
-    void            setSrvRetBuf(sRetBuf* newRetBuf);
     void            setIPAddr(uint8_t* addr);
     void            setGWIPAddr(uint8_t* addr);
     void            setIPMask(uint8_t* mask);
     bool            createTcpSocketListen(uint8_t* socketid, uint16_t port);
-    bool            createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport);
+    bool            createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport, uint16_t srcport);
     bool            closeSocket(uint8_t socket);
     void            configKeepAlive(uint32_t KLIdle = 20000, uint32_t KLIntvl = 15000, uint32_t KLCount = 9);
     bool            init(void);
@@ -74,12 +66,14 @@ public:
     void            sendPacket(uint8_t socket, u8 *buf, u32 len); // Send a packet to a specific socket
     bool            isDHCPOK(void);
     char*           getDnsName(void);
-    uint8_t*         getIPAddr(void) { return this->IPAddr; }
+    uint8_t*        getIPAddr(void) { return this->IPAddr; }
     e_phyStatus     getPHYStatus(void);
     e_socketStatus  getSocketStatus(uint8_t socketid);
     void            socketBufIsRead(uint8_t socketid);
+    uint8_t*        getRecvBuf(uint8_t socketid, uint16_t* len);
+    void            flushRecvBuf(uint8_t socketid);
     bool            isPHYOK(void);
-    ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask, uint16_t newSrcPort = 55555); // Staic IP mode
-    ethIF(uint16_t newSrcPort = 55555); // DCHP mode
+    ethIF(uint8_t* IPAddr, uint8_t* GWIPAddr, uint8_t* IPMask); // Staic IP mode
+    ethIF(); // DCHP mode
     ~ethIF();
 };

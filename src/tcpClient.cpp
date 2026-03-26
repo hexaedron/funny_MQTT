@@ -1,12 +1,12 @@
 #include "tcpClient.h"
 
-tcpClient::tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort)
+tcpClient::tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort, uint16_t newSrcPort)
 {
     this->ethInterface = eth;
     this->destIPAddress = newDestIPAddress;
     this->destIPPort = newDestIPPort;
-    this->ethInterface->setSrvRetBuf(&this->retBuf);
-    this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort);
+    this->srcport = newSrcPort;
+    this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort, this->srcport++);
 }
 
 tcpClient::~tcpClient()
@@ -33,13 +33,12 @@ void tcpClient::sendPacket(u8 *buf, u32 len)
 
 uint8_t* tcpClient::getRecvBuf(uint16_t* len)
 {
-    *len = this->retBuf.bufLen;
-    return this->retBuf.retBuf;
+    return this->ethInterface->getRecvBuf(this->socket, len);
 }
 
 void tcpClient::flushRecvBuf(void)
 {
-    this->retBuf.bufLen = 0;
+    this->ethInterface->flushRecvBuf(this->socket);
     this->ethInterface->socketBufIsRead(this->socket);
 }
 
@@ -50,7 +49,7 @@ bool tcpClient::disconnect(void)
 
 bool tcpClient::connect(void)
 {
-    return this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort);
+    return this->ethInterface->createTcpSocket(&this->socket, this->destIPAddress, this->destIPPort, this->srcport);
 }
 
 char* tcpClient::getDnsName(void)

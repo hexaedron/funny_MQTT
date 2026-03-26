@@ -29,13 +29,12 @@ uint8_t WCHNET_DHCPCallBack(u8 status, void *arg)
     }
 }
 
-ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask, uint16_t newSrcPort)
+ethIF::ethIF(uint8_t* ipaddr, uint8_t* gwipaddr, uint8_t* ipmask)
 {
     WCHNET_GetMacAddr(this->MACAddr);
     this->IPAddr    = ipaddr;
     this->GWIPAddr  = gwipaddr;
     this->IPMask    = ipmask;
-    this->srcport   = newSrcPort;
     this->populateDNSName();
 }
 
@@ -54,14 +53,13 @@ void ethIF::populateDNSName(void)
     this->dnsName[prefixLen + 12] = '\0';
 }
 
-ethIF::ethIF(uint16_t newSrcPort)
+ethIF::ethIF()
 {
     WCHNET_GetMacAddr(this->MACAddr);
 
     this->IPAddr    = l_IPAddr;
     this->GWIPAddr  = l_GWIPAddr;
     this->IPMask    = l_IPMask;
-    this->srcport   = newSrcPort;
 
     this->populateDNSName();
     WCHNET_DHCPSetHostname(this->dnsName);
@@ -97,7 +95,7 @@ void ethIF::configKeepAlive(uint32_t KLIdle, uint32_t KLIntvl, uint32_t KLCount)
 
 bool ethIF::init(void)
 {
-    this->tim2Init();          
+    this->tim2Init();
     
     if (ETH_LibInit(IPAddr, GWIPAddr, IPMask, MACAddr) != WCHNET_ERR_SUCCESS) //Ethernet library initialize
     {
@@ -192,24 +190,24 @@ bool ethIF::createTcpSocketListen(uint8_t* socketid, uint16_t port)
     TmpSocketInf.ProtoType = PROTO_TYPE_TCP;
     if(WCHNET_SocketCreat(socketid, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
         return false;
-    if(WCHNET_SocketListen(*socketid) != WCHNET_ERR_SUCCESS)                   //listen for connections
+    if(WCHNET_SocketListen(*socketid                   ) != WCHNET_ERR_SUCCESS)                   //listen for connections
         return false;
 
     return true;
 }
 
-bool ethIF::createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport)
+bool ethIF::createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destport, uint16_t srcport)
 {
     SOCK_INF TmpSocketInf = {0};
 
     memcpy((void *) TmpSocketInf.IPAddr, destIP, 4);
     TmpSocketInf.DesPort = destport;
-    TmpSocketInf.SourPort = this->srcport++;
+    TmpSocketInf.SourPort = srcport;
     TmpSocketInf.ProtoType = PROTO_TYPE_TCP;
     TmpSocketInf.RecvBufLen = RECE_BUF_LEN;
     if(WCHNET_SocketCreat(socketid, &TmpSocketInf) != WCHNET_ERR_SUCCESS)
         return false;
-    if(WCHNET_SocketConnect(*socketid + WCHNET_NUM_TCP_LISTEN) != WCHNET_ERR_SUCCESS)                        //make a TCP connection
+    if(WCHNET_SocketConnect(*socketid           ) != WCHNET_ERR_SUCCESS)                        //make a TCP connection
         return false;
 
     return true;
@@ -226,22 +224,13 @@ bool ethIF::createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destpor
  */
 void ethIF::dataLoopback(u8 id)
 {
-    uint32_t len, totallen;
-    uint8_t *p = this->srvRetBuf->retBuf, TransCnt = 255;
+    uint32_t len;
+    uint8_t socketNum = this->getSocketNumByID(id);
+    uint8_t *p = this->SocketRecvBuf[socketNum];
 
     len = WCHNET_SocketRecvLen(id, NULL);                                //query length
-    totallen = len;
-    this->srvRetBuf->bufLen = len; 
-    WCHNET_SocketRecv(id, this->srvRetBuf->retBuf, &len);                                  //Read the data of the receive buffer into retBuf
-    while(1)
-    {
-        len = totallen;
-        totallen -= len;                                                 //Subtract the sent length from the total length
-        p += len;                                                        //offset buffer pointer
-        if( !--TransCnt )  break;                                        //Timeout exit
-        if(totallen) continue;                                           //If the data is not sent, continue to send
-        break;                                                           //After sending, exit
-    }
+    this->retBufLen[socketNum] = len; 
+    WCHNET_SocketRecv(id, p, &len);                                  //Read the data of the receive buffer into retBuf
 }
 
 /*********************************************************************
@@ -256,7 +245,7 @@ void ethIF::dataLoopback(u8 id)
  */
 void ethIF::handleSockInt(u8 socketid, u8 intstat)
 {
-    u8 i;
+    uint32_t i;
 
     if (intstat & SINT_STAT_RECV)                                 //receive data
     {
@@ -275,12 +264,16 @@ void ethIF::handleSockInt(u8 socketid, u8 intstat)
         {
             WCHNET_SocketSetKeepLive(socketid, ENABLE);
         }
-
-        WCHNET_ModifyRecvBuf(socketid, (u32) SocketRecvBuf[socketid], RECE_BUF_LEN);
+        
         for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {
             if (socket[i].socketID == 0xff) {                              //save connected socket id
                 socket[i].socketID = socketid;
                 socket[i].status = e_socketStatus::connected;
+                uint8_t sockNum = this->getSocketNumByID(socketid);
+                if(sockNum != 0xff)
+                {
+                    WCHNET_ModifyRecvBuf(socketid, (u32) SocketRecvBuf[this->getSocketNumByID(socketid)], RECE_BUF_LEN);
+                }
                 break;
             }
         }
@@ -376,19 +369,14 @@ void ethIF::sendPacket(uint8_t socket, u8 *buf, u32 len)
 {
     if(socket != UINT8_MAX)
     {
-        WCHNET_SocketSend(socket + WCHNET_NUM_TCP_LISTEN, buf, &len);
+        WCHNET_SocketSend(socket, buf, &len);
     }
 
 }
 
 bool ethIF::closeSocket(uint8_t socket)
 {
-    return WCHNET_SocketClose(socket + WCHNET_NUM_TCP_LISTEN, TCP_CLOSE_NORMAL);
-}
-
-void ethIF::setSrvRetBuf(sRetBuf* newRetBuf)
-{
-    this->srvRetBuf= newRetBuf;
+    return WCHNET_SocketClose(socket, TCP_CLOSE_NORMAL);
 }
 
 bool ethIF::isDHCPOK(void)
@@ -426,7 +414,7 @@ e_socketStatus ethIF::getSocketStatus(uint8_t socketid)
 
 uint8_t ethIF::getSocketNumByID(uint8_t socketid)
 {
-    for(int8_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
+    for(int32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
     {
         if(socket[i].socketID == socketid)
         {
@@ -443,5 +431,27 @@ void ethIF::socketBufIsRead(uint8_t socketid)
     if(sockNum != 0xff)
     {
         socket[socketid].status = e_socketStatus::connected;
+    }
+}
+
+uint8_t* ethIF::getRecvBuf(uint8_t socketid, uint16_t* len)
+{
+    uint8_t sockNum = this->getSocketNumByID(socketid);
+    if(sockNum != 0xff)
+    {
+        *len = this->retBufLen[sockNum];
+        return this->SocketRecvBuf[sockNum];
+    }
+
+    *len = 0;
+    return nullptr;
+}
+
+void ethIF::flushRecvBuf(uint8_t socketid)
+{
+    uint8_t sockNum = this->getSocketNumByID(socketid);
+    if(sockNum != 0xff)
+    {
+        this->retBufLen[sockNum] = 0;
     }
 }

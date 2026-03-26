@@ -8,9 +8,9 @@ class tcpClient
 {
 private:
     ethIF*   ethInterface;
-    sRetBuf  retBuf;
     uint8_t* destIPAddress;                     //IP address
     uint16_t destIPPort;
+    uint16_t srcport;
     uint8_t  socket = UINT8_MAX;
 
 public:
@@ -24,6 +24,6 @@ public:
     bool           disconnect(void);
     bool           connect(void);
     e_socketStatus getSocketStatus(void);
-    tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort);
+    tcpClient(ethIF* eth, uint8_t* newDestIPAddress, uint16_t newDestIPPort, uint16_t newSrcPort = 11111);
     ~tcpClient();
 };

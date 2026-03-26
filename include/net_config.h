@@ -24,7 +24,7 @@ extern "C" {
 
 #define WCHNET_NUM_UDP                1  /* The number of UDP connections */
 
-#define WCHNET_NUM_TCP                1  /* Number of TCP connections */
+#define WCHNET_NUM_TCP                2  /* Number of TCP connections */
 
 #define WCHNET_NUM_TCP_LISTEN         1  /* Number of TCP listening */
 

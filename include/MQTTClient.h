@@ -589,7 +589,6 @@ void MQTTClient
         break;
 
         case e_socketStatus::wrongstatus:
-            this->connect();
             this->MQTTStatus = eMQTTStatus::MQTTUnknown;
         break;
     
@@ -609,6 +608,8 @@ void MQTTClient
     if( (this->MQTTStatus == eMQTTStatus::MQTTUnknown) && ((time - this->unknownTmr) > unknownTimeout) )
     {
         this->unknownTmr = time;
+        this->disconnect();
+        this->connect();
         this->MQTTConnect(this->MQTTUsername, this->MQTTPassword);
         this->MQTTStatus = eMQTTStatus::MQTTConnectRequested;
     }

@@ -9,8 +9,8 @@ class tcpServer
 private:
     uint16_t srcport;       //source port
     ethIF* ethInterface;
-    sRetBuf retBuf;
     uint8_t socket = UINT8_MAX;
+    uint8_t socketForListen = UINT8_MAX;
 
 public:
     void setIPPort(uint16_t port);

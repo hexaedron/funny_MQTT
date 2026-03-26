@@ -4,8 +4,8 @@ tcpServer::tcpServer(ethIF* eth, uint16_t ipport)
 {
     this->ethInterface = eth;
     this->srcport   = ipport;
-    this->ethInterface->setSrvRetBuf(&this->retBuf);
-    this->ethInterface->createTcpSocketListen(&this->socket, ipport);
+    this->ethInterface->createTcpSocketListen(&this->socketForListen, ipport);
+    this->socket = this->socketForListen + 1;
 }
 
 tcpServer::~tcpServer()
@@ -37,11 +37,10 @@ void tcpServer::sendPacket(u8 *buf, u32 len)
 
 uint8_t* tcpServer::getRecvBuf(uint16_t* len)
 {
-    *len = this->retBuf.bufLen;
-    return this->retBuf.retBuf;
+    return this->ethInterface->getRecvBuf(this->socket, len); 
 }
 
 void tcpServer::flushRecvBuf(void)
 {
-    this->retBuf.bufLen = 0;
+    this->ethInterface->flushRecvBuf(this->socket);
 }
