@@ -22,13 +22,6 @@ typedef enum
     wrongstatus
 } e_socketStatus;
 
-typedef struct 
-{
-    uint8_t socketID;
-    e_socketStatus status;
-} s_socket;
-
-
 class ethIF
 {
 private:
@@ -38,9 +31,9 @@ private:
     uint8_t* IPMask;                    //subnet mask
     char dnsName[25] = "smartcube-";    //The DNS name we set by DHCP
 
-    s_socket         socket[WCHNET_MAX_SOCKET_NUM];                       //Save the currently connected socket
+    e_socketStatus   socketStates[WCHNET_MAX_SOCKET_NUM] = {e_socketStatus::created};
     uint8_t          SocketRecvBuf[WCHNET_MAX_SOCKET_NUM][RECE_BUF_LEN];  //socket receive buffer
-    int16_t          retBufLen[WCHNET_MAX_SOCKET_NUM];                 //Received data length for each socket
+    int16_t          retBufLen[WCHNET_MAX_SOCKET_NUM] = {0};                 //Received data length for each socket
     bool             keepAlive = false;
     struct _KEEP_CFG cfg;
     e_phyStatus      phyStatus = e_phyStatus::unknown;
@@ -51,8 +44,7 @@ private:
     void    handleSockInt(u8 socketid, u8 intstat);
     void    handleGlobalInt(void);
     void    populateDNSName(void);
-    uint8_t getSocketNumByID(uint8_t socketid);
-
+    
 public:
     void            setIPAddr(uint8_t* addr);
     void            setGWIPAddr(uint8_t* addr);

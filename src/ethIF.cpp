@@ -109,8 +109,7 @@ bool ethIF::init(void)
     
     for(uint32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
     {
-        socket[i].socketID = 0xff;
-        socket[i].status = e_socketStatus::created;
+        this->socketStates[i] = e_socketStatus::created;
     }
 
     if(this->IPAddr[0] == 0)
@@ -225,11 +224,10 @@ bool ethIF::createTcpSocket(uint8_t* socketid, uint8_t* destIP, uint16_t destpor
 void ethIF::dataLoopback(u8 id)
 {
     uint32_t len;
-    uint8_t socketNum = this->getSocketNumByID(id);
-    uint8_t *p = this->SocketRecvBuf[socketNum];
+    uint8_t *p = this->SocketRecvBuf[id];
 
     len = WCHNET_SocketRecvLen(id, NULL);                                //query length
-    this->retBufLen[socketNum] = len; 
+    this->retBufLen[id] = len; 
     WCHNET_SocketRecv(id, p, &len);                                  //Read the data of the receive buffer into retBuf
 }
 
@@ -245,16 +243,11 @@ void ethIF::dataLoopback(u8 id)
  */
 void ethIF::handleSockInt(u8 socketid, u8 intstat)
 {
-    uint32_t i;
 
     if (intstat & SINT_STAT_RECV)                                 //receive data
     {
         this->dataLoopback(socketid);                            //Data loopback
-        uint8_t sockNum = this->getSocketNumByID(socketid);
-        if(sockNum != 0xff)
-        {
-            socket[sockNum].status = e_socketStatus::connected;
-        }
+        this->socketStates[socketid] = e_socketStatus::connected;
     }
 
 
@@ -265,42 +258,21 @@ void ethIF::handleSockInt(u8 socketid, u8 intstat)
             WCHNET_SocketSetKeepLive(socketid, ENABLE);
         }
         
-        for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {
-            if (socket[i].socketID == 0xff) {                              //save connected socket id
-                socket[i].socketID = socketid;
-                socket[i].status = e_socketStatus::connected;
-                uint8_t sockNum = this->getSocketNumByID(socketid);
-                if(sockNum != 0xff)
-                {
-                    WCHNET_ModifyRecvBuf(socketid, (u32) SocketRecvBuf[this->getSocketNumByID(socketid)], RECE_BUF_LEN);
-                }
-                break;
-            }
-        }
+        this->socketStates[socketid] = e_socketStatus::connected;
+        WCHNET_ModifyRecvBuf(socketid, SocketRecvBuf[socketid], RECE_BUF_LEN);
+
     }
 
 
     if (intstat & SINT_STAT_DISCONNECT)                           //disconnect
-    {
-        for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {             //delete disconnected socket id
-            if (socket[i].socketID == socketid) {
-                socket[i].socketID = 0xff;
-                socket[i].status = e_socketStatus::disconnected;
-                break;
-            }
-        }
+    {  
+        this->socketStates[socketid] = e_socketStatus::disconnected;
     }
 
 
     if (intstat & SINT_STAT_TIM_OUT)                              //timeout disconnect
     {
-        for (i = 0; i < WCHNET_MAX_SOCKET_NUM; i++) {             //delete disconnected socket id
-            if (socket[i].socketID == socketid) {
-                socket[i].socketID = 0xff;
-                socket[i].status = e_socketStatus::timeout;
-                break;
-            }
-        }
+        this->socketStates[socketid] = e_socketStatus::timeout;
     }
 }
 
@@ -376,7 +348,12 @@ void ethIF::sendPacket(uint8_t socket, u8 *buf, u32 len)
 
 bool ethIF::closeSocket(uint8_t socket)
 {
-    return WCHNET_SocketClose(socket, TCP_CLOSE_NORMAL);
+    if(socket != UINT8_MAX)
+    {
+        return WCHNET_SocketClose(socket, TCP_CLOSE_NORMAL);
+    }
+
+    return false;
 }
 
 bool ethIF::isDHCPOK(void)
@@ -401,46 +378,30 @@ char* ethIF::getDnsName(void)
 
 e_socketStatus ethIF::getSocketStatus(uint8_t socketid)
 {
-    for(int32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
+    if(socketid != UINT8_MAX)
     {
-        if(socket[i].socketID == socketid)
-        {
-            return socket[i].status;
-        }
+        return this->socketStates[socketid];
     }
-
-    return e_socketStatus::wrongstatus;
-}
-
-uint8_t ethIF::getSocketNumByID(uint8_t socketid)
-{
-    for(int32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
+    else
     {
-        if(socket[i].socketID == socketid)
-        {
-            return i;
-        }
+        return e_socketStatus::wrongstatus;
     }
-
-    return 0xff;
 }
 
 void ethIF::socketBufIsRead(uint8_t socketid)
 {
-    uint8_t sockNum = this->getSocketNumByID(socketid);
-    if(sockNum != 0xff)
+    if(socketid != UINT8_MAX)
     {
-        socket[socketid].status = e_socketStatus::connected;
+        this->socketStates[socketid] = e_socketStatus::connected;
     }
 }
 
 uint8_t* ethIF::getRecvBuf(uint8_t socketid, uint16_t* len)
 {
-    uint8_t sockNum = this->getSocketNumByID(socketid);
-    if(sockNum != 0xff)
+    if(socketid != UINT8_MAX)
     {
-        *len = this->retBufLen[sockNum];
-        return this->SocketRecvBuf[sockNum];
+        *len = this->retBufLen[socketid];
+        return this->SocketRecvBuf[socketid];
     }
 
     *len = 0;
@@ -449,9 +410,8 @@ uint8_t* ethIF::getRecvBuf(uint8_t socketid, uint16_t* len)
 
 void ethIF::flushRecvBuf(uint8_t socketid)
 {
-    uint8_t sockNum = this->getSocketNumByID(socketid);
-    if(sockNum != 0xff)
+    if(socketid != UINT8_MAX)
     {
-        this->retBufLen[sockNum] = 0;
+        this->retBufLen[socketid] = 0;
     }
 }

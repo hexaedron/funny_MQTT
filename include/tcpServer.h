@@ -7,7 +7,7 @@
 class tcpServer
 {
 private:
-    uint16_t srcport;       //source port
+    uint16_t dstport;       //listen port
     ethIF* ethInterface;
     uint8_t socket = UINT8_MAX;
     uint8_t socketForListen = UINT8_MAX;
