@@ -36,6 +36,8 @@ void tcpServer::sendPacket(u8 *buf, u32 len)
 
 uint8_t* tcpServer::getRecvBuf(uint16_t* len)
 {
+    // If this->socket has a wrong value, it means that the socket for real communication
+    // (not a listen socket) is not yet determined. Here we search SocketInf to find the socket ID.
     if(this->socket == UINT8_MAX)
     {
         for(uint32_t i = 0; i < WCHNET_MAX_SOCKET_NUM; i++)
